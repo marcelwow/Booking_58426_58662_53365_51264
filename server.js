@@ -17,6 +17,6 @@ mongoose.connect(process.env.MONGO_URI, {
 app.use("/api/auth", authRoutes);
 app.use("/api/bookings", bookingRoutes);
 
-app.listen(5001, () => console.log("dziala na porcie:0000"));
+app.listen(5002, () => console.log("dziala na porcie:0000"));
 
 
