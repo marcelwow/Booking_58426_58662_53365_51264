@@ -1,22 +1,27 @@
 const express = require("express");
-const mongoose = require("mongoose");
-const authRoutes = require("./routes/authRoutes");
-const bookingRoutes = require("./routes/bookingRoutes");
-require("dotenv").config();
+const path = require("path");
 
 const app = express();
-app.use(express.json());
 
-mongoose.connect(process.env.MONGO_URI, {
-    useNewUrlParser: true,
-    useUnifiedTopology: true,
-})
-    .then(() => console.log("mongo dziala"))
-    .catch((err) => console.error("mongfo nie dziala:", err));
+// Serve static files from the 'public' directory
+app.use(express.static(path.join(__dirname, 'public')));
 
-app.use("/api/auth", authRoutes);
-app.use("/api/bookings", bookingRoutes);
+// Set view engine to EJS
+app.set('view engine', 'ejs');
+app.set('views', path.join(__dirname, 'views'));
 
-app.listen(5002, () => console.log("dziala na porcie:0000"));
+// Homepage route
+app.get("/", (req, res) => {
+    res.render('index', {
+        title: 'Booking.com Clone',
+        message: 'Welcome to our Hotel Booking Website'
+    });
+});
+
+// Start server
+const PORT = process.env.PORT || 5000;
+app.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`);
+});
 
 
