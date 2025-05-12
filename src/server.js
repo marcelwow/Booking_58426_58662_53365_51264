@@ -1,6 +1,7 @@
 const express = require('express');
 const path = require('path');
 const config = require('./config');
+
 const mongoose = require('mongoose');
 
 const hotelsRoutes = require('../routes/hotels');
@@ -38,4 +39,5 @@ app.get('/hotel-view', (req, res) => {
 app.listen(config.PORT, () => {
     console.log(`Server is running on port ${config.PORT}`);
 });
+
 
