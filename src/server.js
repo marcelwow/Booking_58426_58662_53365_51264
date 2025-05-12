@@ -5,20 +5,17 @@ const session = require('express-session');
 const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const User = require('../models/User');
-
+const hotelsRoutes = require('../routes/hotels');
 const app = express();
 
-// 🔗 Połączenie z MongoDB
-mongoose.connect('mongodb+srv://sebaswit46:Pilkareczna17@cluster0.wkiftrn.mongodb.net', {
-    useNewUrlParser: true,
-    useUnifiedTopology: true
-})
-    .then(() => console.log('✅ Połączono z MongoDB'))
-    .catch(err => console.error('❌ Błąd połączenia z MongoDB:', err));
+mongoose.connect('mongodb+srv://sebaswit46:Pilkareczna17@cluster0.wkiftrn.mongodb.net/booking?retryWrites=true&w=majority')
+    .then(() => console.log(" Połączono z MongoDB"))
+    .catch(err => console.error(" Błąd połączenia z MongoDB:", err));
 
-// Middleware
+
+// Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, '../public')));
-app.use(express.urlencoded({ extended: true }));
+app.use('/hotels', hotelsRoutes);
 
 // Obsługa sesji
 app.use(session({
@@ -29,9 +26,9 @@ app.use(session({
 
 // EJS
 app.set('view engine', 'ejs');
-app.set('views', path.join(__dirname, '/../views'));
+app.set('views', path.join(__dirname, '../views'));
 
-// Strona główna
+// Homepage route
 app.get('/', (req, res) => {
     res.render('index', {
         title: 'Booking.com Clone',
@@ -39,7 +36,6 @@ app.get('/', (req, res) => {
     });
 });
 
-// Widok hotelu
 app.get('/hotel-view', (req, res) => {
     res.render('hotel', {
         title: 'Detailed hotel view',
@@ -107,3 +103,5 @@ app.post('/login', async (req, res) => {
 app.listen(config.PORT, () => {
     console.log(`Server is running on port ${config.PORT}`);
 });
+
+
