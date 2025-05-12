@@ -1,0 +1,46 @@
+<%- include('partials/html_header') %>
+<%- include('partials/navbar') %>
+<div class="container">
+    <form action="/search" method="GET">
+        <div class="row">
+            <div class="col-sm-4">
+                <input type="text" class="form-control" placeholder="Where are you going?" aria-label="First name">
+            </div>
+            <div class="col-sm-2">
+                <input type="date" class="form-control" placeholder="From date" aria-label="Last name">
+            </div>
+            <div class="col-sm-2">
+                <input type="date" class="form-control" placeholder="To date" aria-label="Last name">
+            </div>
+            <div class="col-sm-2">
+                <div class="btn-group" role="group" aria-label="Basic example">
+                    <button type="button" class="btn btn-primary" id="guests_subtract"><i class="bi bi-dash"></i></button>
+                    <input type="number" min="1" max="12" class="form-control" placeholder="Guests" aria-label="Guests" value="1" id="guests_value" hidden>
+                    <button type="button" class="btn btn-primary" id="guests_view">1</button>
+                    <button type="button" class="btn btn-primary" id="guests_add"><i class="bi bi-plus"></i></button>
+                </div>
+            </div>
+            <div class="col-sm-2">
+                <button type="submit" class="btn btn-light"><i class="bi bi-search"></i> Szukaj</button>
+            </div>
+        </div>
+    </form>
+    <% for(var i=0; i < 2; i++) { %>
+    <div class="row">
+        <% for(var j=0; j < 4; j++) { %>
+            <div class="col-sm-3 mb-3 mb-sm-0">
+                <div class="card mt-4" style="width: 18rem;">
+                    <img src="https://cdn.britannica.com/68/250068-050-B0AD857A/Burj-Al-Arab-luxury-hotel-Dubai.jpg" class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">Card title</h5>
+                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card’s content.</p>
+                        <a href="/hotel-view" class="btn btn-primary">Go somewhere</a>
+                    </div>
+                </div>
+            </div>
+        <% } %>
+        <% } %>
+    </div>
+</div>
+
+<%- include('partials/html_footer') %>
