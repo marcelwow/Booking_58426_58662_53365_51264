@@ -1,6 +1,14 @@
 <%- include('partials/html_header') %>
 <%- include('partials/navbar') %>
+
 <div class="container">
+
+
+    <div class="d-flex justify-content-end my-3">
+        <a href="/login" class="btn btn-outline-primary me-2">Zaloguj się</a>
+        <a href="/register" class="btn btn-primary">Załóż konto</a>
+    </div>
+
     <form action="/search" method="GET">
         <div class="row">
             <div class="col-sm-4">
@@ -25,21 +33,22 @@
             </div>
         </div>
     </form>
+
     <% for(var i=0; i < 2; i++) { %>
     <div class="row">
         <% for(var j=0; j < 4; j++) { %>
-        <div class="col-sm-3 mb-3 mb-sm-0">
-            <div class="card mt-4" style="width: 18rem;">
-                <img src="https://cdn.britannica.com/68/250068-050-B0AD857A/Burj-Al-Arab-luxury-hotel-Dubai.jpg" class="card-img-top" alt="...">
-                <div class="card-body">
-                    <h5 class="card-title">Card title</h5>
-                    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card’s content.</p>
-                    <a href="/hotel-view" class="btn btn-primary">Go somewhere</a>
+            <div class="col-sm-3 mb-3 mb-sm-0">
+                <div class="card mt-4" style="width: 18rem;">
+                    <img src="https://cdn.britannica.com/68/250068-050-B0AD857A/Burj-Al-Arab-luxury-hotel-Dubai.jpg" class="card-img-top" alt="...">
+                    <div class="card-body">
+                        <h5 class="card-title">Card title</h5>
+                        <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card’s content.</p>
+                        <a href="/hotel-view" class="btn btn-primary">Go somewhere</a>
+                    </div>
                 </div>
             </div>
-        </div>
         <% } %>
-    <% } %>
+        <% } %>
     </div>
 </div>
 
