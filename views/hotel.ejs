@@ -1,3 +1,146 @@
-<%- include('partials/html_header')%>
+<%- include('partials/html_header') %>
 <%- include('partials/navbar') %>
-<%- include('partials/html_footer')%>
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="row">
+                <div class="col-md-7">
+                    <div class="hotel-title">
+                        <h1 class="hotel-name">Burj Al Arab</h1>
+                        <div class="hotel-stars">
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                            <i class="bi bi-star-fill"></i>
+                        </div>
+                        <div class="hotel-location">
+                            <i class="bi bi-geo-alt-fill"></i> Dubai, United Arab Emirates
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-5">
+                    <div class="booking-selector">
+                        <form action="/booking-confirmation" method="GET" class="d-flex align-items-end gap-3">
+                            <div class="date-inputs">
+                                <div>
+                                    <label for="check-in" class="form-label">Check-in</label>
+                                    <input type="date" class="form-control" id="check-in" name="check-in" required>
+                                </div>
+                                <div>
+                                    <label for="check-out" class="form-label">Check-out</label>
+                                    <input type="date" class="form-control" id="check-out" name="check-out" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary btn-book">
+                                <i class="bi bi-calendar-check me-2"></i>Book Now
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="carouselExampleAutoplaying" class="carousel slide" data-bs-ride="false" data-bs-interval="5000">
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="https://cdn.britannica.com/68/250068-050-B0AD857A/Burj-Al-Arab-luxury-hotel-Dubai.jpg"
+                             class="d-block w-100" alt="..." style="object-fit: cover; height: 400px;">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="https://cf.bstatic.com/xdata/images/hotel/max1024x768/457394453.jpg?k=c0ab2579efd39355c852cf054a8051d908c71c8f0bc0d3f9260388747a51a85f&o=&hp=1"
+                             class="d-block w-100" alt="..." style="object-fit: cover; height: 400px;">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="https://cdn.twocontinents.com/Burj_Al_Arab_Room_Dubai_9e841285bd.jpg" class="d-block w-100"
+                             alt="..." style="object-fit: cover; height: 400px;">
+                    </div>
+                </div>
+                <button class="carousel-control-prev" type="button" data-bs-target="#carouselExampleAutoplaying"
+                        data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Previous</span>
+                </button>
+                <button class="carousel-control-next" type="button" data-bs-target="#carouselExampleAutoplaying"
+                        data-bs-slide="next">
+                    <span class="carousel-control-next-icon" aria-hidden="true"></span>
+                    <span class="visually-hidden">Next</span>
+                </button>
+            </div>
+            
+            <div class="thumbnail-container">
+                <img src="https://cdn.britannica.com/68/250068-050-B0AD857A/Burj-Al-Arab-luxury-hotel-Dubai.jpg"
+                     class="thumbnail active" alt="Thumbnail 1" onclick="showLightbox(this.src)">
+                <img src="https://cf.bstatic.com/xdata/images/hotel/max1024x768/457394453.jpg?k=c0ab2579efd39355c852cf054a8051d908c71c8f0bc0d3f9260388747a51a85f&o=&hp=1"
+                     class="thumbnail" alt="Thumbnail 2" onclick="showLightbox(this.src)">
+                <img src="https://cdn.twocontinents.com/Burj_Al_Arab_Room_Dubai_9e841285bd.jpg"
+                     class="thumbnail" alt="Thumbnail 3" onclick="showLightbox(this.src)">
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="hotel-description">
+                <h2 class="mb-4">About the Hotel</h2>
+                <p class="mb-4">
+                    Burj Al Arab is an iconic luxury hotel located on its own artificial island, connected to the mainland by a private bridge. 
+                    Standing at 321 meters, it's one of the tallest hotels in the world and is designed to resemble a billowing sail. 
+                    The hotel offers unparalleled luxury with its 202 duplex suites, each featuring floor-to-ceiling windows offering spectacular views of the Arabian Gulf.
+                </p>
+
+                <h3 class="mb-3">Amenities</h3>
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-wifi me-2"></i>Free high-speed WiFi</li>
+                            <li class="mb-2"><i class="bi bi-water me-2"></i>Private beach access</li>
+                            <li class="mb-2"><i class="bi bi-cup-hot me-2"></i>24/7 room service</li>
+                            <li class="mb-2"><i class="bi bi-umbrella me-2"></i>Outdoor pool</li>
+                            <li class="mb-2"><i class="bi bi-dumbbell me-2"></i>Fitness center</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-spa me-2"></i>Luxury spa</li>
+                            <li class="mb-2"><i class="bi bi-cup-straw me-2"></i>Multiple restaurants</li>
+                            <li class="mb-2"><i class="bi bi-parking me-2"></i>Valet parking</li>
+                            <li class="mb-2"><i class="bi bi-bag me-2"></i>Shopping arcade</li>
+                            <li class="mb-2"><i class="bi bi-person me-2"></i>Butler service</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <h3 class="mb-3">Important Distances</h3>
+                <div class="row">
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-airplane me-2"></i>Dubai International Airport: 25 km</li>
+                            <li class="mb-2"><i class="bi bi-building me-2"></i>Dubai Mall: 15 km</li>
+                            <li class="mb-2"><i class="bi bi-shop me-2"></i>City Centre: 20 km</li>
+                        </ul>
+                    </div>
+                    <div class="col-md-6">
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-train-front me-2"></i>Nearest Metro Station: 5 km</li>
+                            <li class="mb-2"><i class="bi bi-water me-2"></i>Public Beach: 2 km</li>
+                            <li class="mb-2"><i class="bi bi-bank me-2"></i>Business District: 18 km</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="lightbox" id="lightbox" onclick="hideLightbox()">
+    <span class="lightbox-close">&times;</span>
+    <img src="" alt="Full size image">
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/hotel.js"></script>
+
+<%- include('partials/html_footer') %>

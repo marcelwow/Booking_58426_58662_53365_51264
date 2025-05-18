@@ -15,7 +15,7 @@ mongoose.connect('mongodb+srv://sebaswit46:Pilkareczna17@cluster0.wkiftrn.mongod
 
 // Middleware
 app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+app.use(express.urlencoded({extended: true}));
 app.use(express.static(path.join(__dirname, '../public')));
 
 // Routes
@@ -33,7 +33,7 @@ app.use(session({
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
 
-// Homepage route
+// Strona glowna
 app.get('/', (req, res) => {
     res.render('index', {
         title: 'Booking.com Clone',
@@ -56,10 +56,10 @@ app.get('/register', (req, res) => {
 });
 
 app.post('/register', async (req, res) => {
-    const { email, password } = req.body;
+    const {email, password} = req.body;
 
     try {
-        const existingUser = await User.findOne({ email });
+        const existingUser = await User.findOne({email});
         if (existingUser) {
             return res.send('Użytkownik o takim e-mailu już istnieje.');
         }
@@ -87,10 +87,10 @@ app.get('/login', (req, res) => {
 });
 
 app.post('/login', async (req, res) => {
-    const { email, password } = req.body;
+    const {email, password} = req.body;
 
     try {
-        const user = await User.findOne({ email });
+        const user = await User.findOne({email});
         if (!user) return res.send('Nieprawidłowy email lub hasło.');
 
         const isMatch = await bcrypt.compare(password, user.password);

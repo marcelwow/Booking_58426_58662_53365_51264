@@ -1,13 +1,6 @@
 <%- include('partials/html_header') %>
 <%- include('partials/navbar') %>
 <div class="container">
-
-
-    <div class="d-flex justify-content-end my-3">
-        <a href="/login" class="btn btn-outline-primary me-2">Zaloguj się</a>
-        <a href="/register" class="btn btn-primary">Załóż konto</a>
-    </div>
-
     <form action="/search" method="GET">
         <div class="row">
             <div class="col-sm-4">
@@ -46,8 +39,8 @@
             </div>
         </div>
         <% } %>
-    <% } %>
     </div>
+    <% } %>
 </div>
 
 <%- include('partials/html_footer') %>
