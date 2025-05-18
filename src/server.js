@@ -6,25 +6,30 @@ const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const hotelsRoutes = require('../routes/hotels');
+const indexRoutes = require('../routes/index');
 const app = express();
 
 mongoose.connect('mongodb+srv://sebaswit46:Pilkareczna17@cluster0.wkiftrn.mongodb.net/booking?retryWrites=true&w=majority')
     .then(() => console.log(" Połączono z MongoDB"))
     .catch(err => console.error(" Błąd połączenia z MongoDB:", err));
 
-
-// Serve static files from the 'public' directory
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(express.static(path.join(__dirname, '../public')));
+
+// Routes
+app.use('/', indexRoutes);
 app.use('/hotels', hotelsRoutes);
 
-// Obsługa sesji
+// Session configuration
 app.use(session({
     secret: 'tajny_klucz',
     resave: false,
     saveUninitialized: true,
 }));
 
-// EJS
+// View engine setup
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, '../views'));
 
