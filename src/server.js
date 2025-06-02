@@ -6,22 +6,31 @@ const bcrypt = require('bcrypt');
 const mongoose = require('mongoose');
 const User = require('../models/User');
 const hotelsRoutes = require('../routes/hotels');
+const authRoutes = require('../routes/auth');
 const app = express();
 
 mongoose.connect('mongodb+srv://sebaswit46:Pilkareczna17@cluster0.wkiftrn.mongodb.net/booking?retryWrites=true&w=majority')
     .then(() => console.log(" Połączono z MongoDB"))
     .catch(err => console.error(" Błąd połączenia z MongoDB:", err));
 
+// Middleware
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, '../public')));
 app.use('/hotels', hotelsRoutes);
+app.use('/auth', authRoutes);
 
 // Obsługa sesji
 app.use(session({
-    secret: 'tajny_klucz',
+    secret: 'your-secret-key',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    cookie: {
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000 // 24 hours
+    }
 }));
 
 // EJS
