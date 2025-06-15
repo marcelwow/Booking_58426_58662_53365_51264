@@ -1,6 +1,7 @@
 const Amadeus = require('amadeus');
 const config = require('../src/config');
-const alternativeHotelService = require('./alternativeHotelService');
+// Usuwamy import alternatywnego serwisu
+// const alternativeHotelService = require('./alternativeHotelService');
 
 // Dodajemy debugowanie
 console.log('Config values:');
@@ -26,69 +27,30 @@ class AmadeusService {
         try {
             console.log(`Wyszukiwanie hoteli w ${cityCode} dla ${adults} osób, ${checkInDate} - ${checkOutDate}`);
             
-            // Znajdź nazwę miasta dla kodu
-            let cityName = this.getCityNameFromCode(cityCode);
-            
             // Spróbuj użyć API Amadeus
             try {
-                // Sprawdź czy amadeus.shopping.hotelOffers istnieje
-                if (amadeus && amadeus.shopping && amadeus.shopping.hotelOffers) {
-                    const response = await amadeus.shopping.hotelOffers.get({
-                        cityCode: cityCode,
-                        adults: adults,
-                        checkInDate: checkInDate,
-                        checkOutDate: checkOutDate,
-                        roomQuantity: 1,
-                        currency: 'PLN',
-                        bestRateOnly: true,
-                        includeClosed: false,
-                        sort: 'PRICE'
-                    });
-                    
-                    if (response.data && response.data.length > 0) {
-                        const formattedHotels = await this.formatHotelOffers(response.data);
-                        // Dodaj nazwę miasta do wyników
-                        return formattedHotels.map(hotel => ({
-                            ...hotel,
-                            city: cityName || hotel.city
-                        }));
-                    }
-                } else {
-                    console.error('Amadeus API nie jest prawidłowo zainicjalizowane');
-                    throw new Error('API niedostępne');
-                }
-            } catch (apiError) {
-                console.error('Błąd API Amadeus podczas wyszukiwania hoteli:', apiError);
-                // Kontynuuj do alternatywnego API lub danych mockowych
+                const response = await amadeus.shopping.hotelOffers.get({
+                    cityCode: cityCode,
+                    adults: adults,
+                    checkInDate: checkInDate,
+                    checkOutDate: checkOutDate,
+                    currency: 'PLN',
+                    roomQuantity: 1
+                });
+                
+                console.log('Amadeus API response:', response.data);
+                
+                // Przetwarzanie odpowiedzi z API
+                return this.formatHotels(response.data);
+            } catch (error) {
+                console.error('Błąd API Amadeus:', error);
+                
+                // Jeśli API nie działa, użyj danych mockowych
+                return this.getMockHotels(cityCode, checkInDate, checkOutDate, adults);
             }
-            
-            // Spróbuj użyć alternatywnego API
-            try {
-                console.log('🔄 Używam alternatywnego API dla:', cityCode);
-                if (alternativeHotelService && typeof alternativeHotelService.searchHotels === 'function') {
-                    const altResults = await alternativeHotelService.searchHotels(cityCode, adults, checkInDate, checkOutDate);
-                    if (altResults && altResults.length > 0) {
-                        // Dodaj nazwę miasta do wyników
-                        return altResults.map(hotel => ({
-                            ...hotel,
-                            city: cityName || hotel.city
-                        }));
-                    }
-                }
-            } catch (alternativeError) {
-                console.error('Błąd alternatywnego API:', alternativeError);
-                // Kontynuuj do danych mockowych
-            }
-            
-            // Jeśli wszystko zawiedzie, zwróć dane mockowe
-            console.log('Używam danych mockowych dla hoteli w:', cityName || cityCode);
-            const mockHotels = this.getMockHotels(cityCode, checkInDate, checkOutDate);
-            return mockHotels;
-            
         } catch (error) {
             console.error('Błąd podczas wyszukiwania hoteli:', error);
-            // Zwróć dane mockowe w przypadku błędu
-            return this.getMockHotels(cityCode, checkInDate, checkOutDate);
+            throw error;
         }
     }
 
@@ -188,8 +150,19 @@ class AmadeusService {
      */
     async getPopularDestinations() {
         try {
-            // Spróbuj pobrać z alternatywnego API (zawsze działa)
-            return await alternativeHotelService.getPopularDestinations();
+            // Zamiast używać alternatywnego API, zwracamy statyczną listę
+            const popularCities = [
+                { code: 'PAR', name: 'Paryż', country: 'Francja' },
+                { code: 'LON', name: 'Londyn', country: 'Wielka Brytania' },
+                { code: 'NYC', name: 'Nowy Jork', country: 'USA' },
+                { code: 'ROM', name: 'Rzym', country: 'Włochy' },
+                { code: 'BCN', name: 'Barcelona', country: 'Hiszpania' },
+                { code: 'BER', name: 'Berlin', country: 'Niemcy' },
+                { code: 'WAW', name: 'Warszawa', country: 'Polska' },
+                { code: 'KRK', name: 'Kraków', country: 'Polska' }
+            ];
+            
+            return popularCities;
         } catch (error) {
             // Fallback na statyczną listę
             const popularCities = [
@@ -208,243 +181,117 @@ class AmadeusService {
     }
 
     /**
-     * Konwertuje nazwę destynacji na kod miasta
-     * @param {string} destination - Nazwa destynacji (np. "Paryż, Francja")
+     * Konwertuje nazwę miasta na kod IATA
+     * @param {string} cityName - Nazwa miasta
      * @returns {Promise<Object>} - Obiekt z kodem miasta
      */
-    async getCityCode(destination) {
+    async getCityCode(cityName) {
         try {
-            // Najpierw sprawdź w mapie popularnych miast
-            const popularCities = {
-                // Polskie miasta
-                'warszawa': 'WAW',
-                'kraków': 'KRK',
-                'krakow': 'KRK',
-                'gdańsk': 'GDN',
-                'gdansk': 'GDN',
-                'wrocław': 'WRO',
-                'wroclaw': 'WRO',
-                'poznań': 'POZ',
-                'poznan': 'POZ',
-                'katowice': 'KTW',
-                'szczecin': 'SZZ',
-                'rzeszów': 'RZE',
-                'rzeszow': 'RZE',
-                'lublin': 'LUZ',
-                'bydgoszcz': 'BZG',
-                'łódź': 'LCJ',
-                'lodz': 'LCJ',
-                'kołobrzeg': 'OSP',
-                'kolobrzeg': 'OSP',
-                'zakopane': 'ZAK',
-                'sopot': 'SOP',
-                'międzyzdroje': 'MIE',
-                'miedzyzdroje': 'MIE',
-                'świnoujście': 'SWI',
-                'swinoujscie': 'SWI',
-                'karpacz': 'KRP',
-                'szklarska poręba': 'SZK',
-                'szklarska poreba': 'SZK',
-                
-                // Popularne europejskie miasta
-                'paryż': 'PAR',
-                'paris': 'PAR',
-                'londyn': 'LON',
-                'london': 'LON',
-                'rzym': 'ROM',
-                'rome': 'ROM',
-                'madryt': 'MAD',
-                'madrid': 'MAD',
-                'barcelona': 'BCN',
-                'amsterdam': 'AMS',
-                'berlin': 'BER',
-                'praga': 'PRG',
-                'prague': 'PRG',
-                'wiedeń': 'VIE',
-                'vienna': 'VIE',
-                'wien': 'VIE',
-                'budapeszt': 'BUD',
-                'budapest': 'BUD',
-                'ateny': 'ATH',
-                'athens': 'ATH',
-                'lizbona': 'LIS',
-                'lisbon': 'LIS',
-                'kopenhaga': 'CPH',
-                'copenhagen': 'CPH',
-                'oslo': 'OSL',
-                'sztokholm': 'STO',
-                'stockholm': 'STO',
-                'helsinki': 'HEL',
-                'zurych': 'ZRH',
-                'zurich': 'ZRH',
-                'monachium': 'MUC',
-                'munich': 'MUC',
-                'dublin': 'DUB',
-                
-                // Popularne światowe miasta
-                'nowy jork': 'NYC',
-                'new york': 'NYC',
-                'los angeles': 'LAX',
-                'san francisco': 'SFO',
-                'miami': 'MIA',
-                'las vegas': 'LAS',
-                'chicago': 'CHI',
-                'tokio': 'TYO',
-                'tokyo': 'TYO',
-                'bangkok': 'BKK',
-                'singapur': 'SIN',
-                'singapore': 'SIN',
-                'hong kong': 'HKG',
-                'sydney': 'SYD',
-                'dubaj': 'DXB',
-                'dubai': 'DXB',
-                'delhi': 'DEL',
-                'rio de janeiro': 'RIO',
-                'meksyk': 'MEX',
-                'mexico city': 'MEX',
-                'kapsztad': 'CPT',
-                'cape town': 'CPT',
-                'kair': 'CAI',
-                'cairo': 'CAI',
-                'stambuł': 'IST',
-                'istanbul': 'IST'
-            };
-            
-            // Sprawdź, czy nazwa miasta jest w naszej mapie
-            const normalizedDestination = destination.toLowerCase().split(',')[0].trim();
-            if (popularCities[normalizedDestination]) {
-                return {
-                    code: popularCities[normalizedDestination],
-                    name: destination
-                };
-            }
-
-            // Jeśli nie znaleziono w mapie, spróbuj przez API
+            // Spróbuj użyć API Amadeus
             try {
-                // Wywołaj API Amadeus do wyszukiwania lokalizacji
                 const response = await amadeus.referenceData.locations.get({
-                    keyword: destination,
-                    subType: 'CITY,AIRPORT'
+                    keyword: cityName,
+                    subType: 'CITY'
                 });
-
+                
                 if (response.data && response.data.length > 0) {
-                    // Zwróć pierwszy wynik
-                    return {
+                    return { 
                         code: response.data[0].iataCode,
-                        name: response.data[0].name,
-                        countryCode: response.data[0].address?.countryCode
+                        name: response.data[0].name
                     };
                 }
-            } catch (apiError) {
-                console.error('Błąd API Amadeus:', apiError);
-                // Kontynuuj do fallbacku
+            } catch (error) {
+                console.error('Błąd API Amadeus podczas pobierania kodu miasta:', error);
             }
             
-            // Jeśli nie znaleziono w mapie ani przez API, spróbuj odgadnąć kod
-            // Weź pierwsze 3 litery miasta (typowa konwencja kodów IATA)
-            if (normalizedDestination.length >= 3) {
-                const guessedCode = normalizedDestination.substring(0, 3).toUpperCase();
-                console.log(`Używam zgadniętego kodu miasta: ${guessedCode} dla ${destination}`);
-                return {
-                    code: guessedCode,
-                    name: destination
-                };
-            }
-            
-            throw new Error('Nie znaleziono kodu miasta dla podanej destynacji');
-        } catch (error) {
-            console.error('Błąd podczas konwersji destynacji na kod miasta:', error);
-            
-            // Zwróć domyślny kod dla popularnych miast lub zgadnij na podstawie nazwy
-            const normalizedDestination = destination.toLowerCase().split(',')[0].trim();
-            if (normalizedDestination.length >= 3) {
-                const guessedCode = normalizedDestination.substring(0, 3).toUpperCase();
-                console.log(`Fallback: Używam zgadniętego kodu miasta: ${guessedCode} dla ${destination}`);
-                return {
-                    code: guessedCode,
-                    name: destination
-                };
-            }
-            
-            // Ostateczny fallback - użyj WAW (Warszawa) jako domyślnego
-            return {
-                code: 'WAW',
-                name: 'Warszawa, Polska'
+            // Jeśli API nie działa, użyj prostego mapowania
+            const cityMapping = {
+                'warszawa': 'WAW',
+                'krakow': 'KRK',
+                'kraków': 'KRK',
+                'gdansk': 'GDN',
+                'gdańsk': 'GDN',
+                'wroclaw': 'WRO',
+                'wrocław': 'WRO',
+                'poznan': 'POZ',
+                'poznań': 'POZ',
+                'szczecin': 'SZZ',
+                'lodz': 'LCJ',
+                'łódź': 'LCJ',
+                'lublin': 'LUZ',
+                'katowice': 'KTW',
+                'rzeszow': 'RZE',
+                'rzeszów': 'RZE',
+                'bydgoszcz': 'BZG',
+                'zakopane': 'ZAK',
+                // Popularne miasta zagraniczne
+                'paris': 'PAR',
+                'paryż': 'PAR',
+                'london': 'LON',
+                'londyn': 'LON',
+                'berlin': 'BER',
+                'rome': 'ROM',
+                'rzym': 'ROM',
+                'madrid': 'MAD',
+                'madryt': 'MAD',
+                'barcelona': 'BCN',
+                'new york': 'NYC',
+                'nowy jork': 'NYC',
+                'tokyo': 'TYO',
+                'tokio': 'TYO',
+                'dubai': 'DXB',
+                'dubaj': 'DXB'
             };
+            
+            const normalizedCityName = cityName.toLowerCase().trim();
+            if (cityMapping[normalizedCityName]) {
+                return { 
+                    code: cityMapping[normalizedCityName],
+                    name: cityName
+                };
+            }
+            
+            return null;
+        } catch (error) {
+            console.error('Błąd podczas konwersji nazwy miasta na kod:', error);
+            return null;
         }
     }
-
+    
     /**
-     * Pobiera nazwę miasta na podstawie kodu
-     * @param {string} cityCode - Kod miasta (np. PAR, LCJ)
-     * @returns {string} - Nazwa miasta
+     * Konwertuje kod IATA miasta na nazwę
+     * @param {string} cityCode - Kod IATA miasta
+     * @returns {string|null} - Nazwa miasta lub null
      */
     getCityNameFromCode(cityCode) {
-        // Mapa kodów miast na nazwy
-        const cityNames = {
-            // Polskie miasta
+        if (!cityCode) return null;
+        
+        const codeMapping = {
             'WAW': 'Warszawa',
             'KRK': 'Kraków',
             'GDN': 'Gdańsk',
             'WRO': 'Wrocław',
             'POZ': 'Poznań',
-            'KTW': 'Katowice',
             'SZZ': 'Szczecin',
-            'RZE': 'Rzeszów',
-            'LUZ': 'Lublin',
-            'BZG': 'Bydgoszcz',
             'LCJ': 'Łódź',
-            'OSP': 'Kołobrzeg',
+            'LUZ': 'Lublin',
+            'KTW': 'Katowice',
+            'RZE': 'Rzeszów',
+            'BZG': 'Bydgoszcz',
             'ZAK': 'Zakopane',
-            'SOP': 'Sopot',
-            'MIE': 'Międzyzdroje',
-            'SWI': 'Świnoujście',
-            'KRP': 'Karpacz',
-            'SZK': 'Szklarska Poręba',
-            
-            // Popularne europejskie miasta
+            // Popularne miasta zagraniczne
             'PAR': 'Paryż',
             'LON': 'Londyn',
+            'BER': 'Berlin',
             'ROM': 'Rzym',
             'MAD': 'Madryt',
             'BCN': 'Barcelona',
-            'AMS': 'Amsterdam',
-            'BER': 'Berlin',
-            'PRG': 'Praga',
-            'VIE': 'Wiedeń',
-            'BUD': 'Budapeszt',
-            'ATH': 'Ateny',
-            'LIS': 'Lizbona',
-            'CPH': 'Kopenhaga',
-            'OSL': 'Oslo',
-            'STO': 'Sztokholm',
-            'HEL': 'Helsinki',
-            'ZRH': 'Zurych',
-            'MUC': 'Monachium',
-            'DUB': 'Dublin',
-            
-            // Popularne światowe miasta
             'NYC': 'Nowy Jork',
-            'LAX': 'Los Angeles',
-            'SFO': 'San Francisco',
-            'MIA': 'Miami',
-            'LAS': 'Las Vegas',
-            'CHI': 'Chicago',
             'TYO': 'Tokio',
-            'BKK': 'Bangkok',
-            'SIN': 'Singapur',
-            'HKG': 'Hong Kong',
-            'SYD': 'Sydney',
-            'DXB': 'Dubaj',
-            'DEL': 'Delhi',
-            'RIO': 'Rio de Janeiro',
-            'MEX': 'Meksyk',
-            'CPT': 'Kapsztad',
-            'CAI': 'Kair',
-            'IST': 'Stambuł'
+            'DXB': 'Dubaj'
         };
         
-        return cityNames[cityCode] || null;
+        return codeMapping[cityCode.toUpperCase()] || cityCode;
     }
 
     /**
@@ -452,119 +299,136 @@ class AmadeusService {
      * @param {string} cityCode - Kod miasta
      * @param {string} checkInDate - Data zameldowania
      * @param {string} checkOutDate - Data wymeldowania
+     * @param {number} adults - Liczba dorosłych
      * @returns {Array} - Lista przykładowych hoteli
      */
-    getMockHotels(cityCode, checkInDate, checkOutDate) {
-        // Mapa nazw miast dla popularnych kodów
-        const cityNames = {
-            // Polskie miasta
-            'WAW': 'Warszawa',
-            'KRK': 'Kraków',
-            'GDN': 'Gdańsk',
-            'WRO': 'Wrocław',
-            'POZ': 'Poznań',
-            'KTW': 'Katowice',
-            'SZZ': 'Szczecin',
-            'RZE': 'Rzeszów',
-            'LUZ': 'Lublin',
-            'BZG': 'Bydgoszcz',
-            'LCJ': 'Łódź',
-            'OSP': 'Kołobrzeg',
-            'ZAK': 'Zakopane',
-            'SOP': 'Sopot',
-            'MIE': 'Międzyzdroje',
-            'SWI': 'Świnoujście',
-            'KRP': 'Karpacz',
-            'SZK': 'Szklarska Poręba',
-            
-            // Popularne europejskie miasta
-            'PAR': 'Paryż',
-            'LON': 'Londyn',
-            'ROM': 'Rzym',
-            'MAD': 'Madryt',
-            'BCN': 'Barcelona',
-            'AMS': 'Amsterdam',
-            'BER': 'Berlin',
-            'PRG': 'Praga',
-            'VIE': 'Wiedeń',
-            'BUD': 'Budapeszt',
-            'ATH': 'Ateny',
-            'LIS': 'Lizbona',
-            'CPH': 'Kopenhaga',
-            'OSL': 'Oslo',
-            'STO': 'Sztokholm',
-            'HEL': 'Helsinki',
-            'ZRH': 'Zurych',
-            'MUC': 'Monachium',
-            'DUB': 'Dublin',
-            
-            // Popularne światowe miasta
-            'NYC': 'Nowy Jork',
-            'LAX': 'Los Angeles',
-            'SFO': 'San Francisco',
-            'MIA': 'Miami',
-            'LAS': 'Las Vegas',
-            'CHI': 'Chicago',
-            'TYO': 'Tokio',
-            'BKK': 'Bangkok',
-            'SIN': 'Singapur',
-            'HKG': 'Hong Kong',
-            'SYD': 'Sydney',
-            'DXB': 'Dubaj',
-            'DEL': 'Delhi',
-            'RIO': 'Rio de Janeiro',
-            'MEX': 'Meksyk',
-            'CPT': 'Kapsztad',
-            'CAI': 'Kair',
-            'IST': 'Stambuł'
-        };
+    getMockHotels(cityCode, checkInDate, checkOutDate, adults = 1) {
+        console.log(`Generowanie przykładowych hoteli dla ${cityCode}`);
         
-        // Domyślna nazwa miasta
-        let cityName = cityNames[cityCode] || `Miasto (${cityCode})`;
+        // Pobierz nazwę miasta na podstawie kodu
+        const cityName = this.getCityNameFromCode(cityCode) || 'Nieznane miasto';
         
-        // Przykładowe nazwy hoteli dla różnych kategorii
-        const hotelPrefixes = [
-            'Grand Hotel', 'Hotel', 'Apartamenty', 'Pensjonat', 'Rezydencja',
-            'Royal', 'Boutique Hotel', 'Palace', 'Resort & Spa', 'Luksusowy Hotel'
+        // Generuj przykładowe nazwy ulic dla danego miasta
+        const streets = [
+            'Główna', 'Warszawska', 'Krakowska', 'Mickiewicza', 'Słowackiego',
+            'Kościuszki', 'Piłsudskiego', 'Sienkiewicza', 'Kolejowa', '3 Maja'
         ];
-        
-        const hotelSuffixes = [
-            'Plaza', 'Centrum', 'Old Town', 'Residence', 'Panorama',
-            'Deluxe', 'Premium', 'Executive', 'Exclusive', 'Prestige'
-        ];
-        
-        // Generuj nazwy hoteli dla danego miasta
-        const hotelNames = [];
-        for (let i = 0; i < 5; i++) {
-            hotelNames.push(`${hotelPrefixes[i % hotelPrefixes.length]} ${cityName}`);
-        }
-        for (let i = 0; i < 5; i++) {
-            hotelNames.push(`${cityName} ${hotelSuffixes[i % hotelSuffixes.length]}`);
-        }
-        
-        // Przykładowe adresy dla różnych typów miast
-        let streets;
-        if (Object.values(cityNames).slice(0, 18).includes(cityName)) {
-            // Polskie ulice
-            streets = [
-                'ul. Marszałkowska', 'ul. Piotrkowska', 'ul. Floriańska', 
-                'ul. Długa', 'Aleje Jerozolimskie', 'ul. Świdnicka',
-                'ul. Bohaterów Monte Cassino', 'ul. Krupówki', 'ul. Szeroka',
-                'Plac Zamkowy', 'ul. Świętojańska', 'ul. Wrocławska'
-            ];
-        } else {
-            // Międzynarodowe ulice
-            streets = [
-                'Main Street', 'Broadway', 'High Street', 'Avenue des Champs-Élysées',
-                'Via del Corso', 'Gran Vía', 'Kurfürstendamm', 'Oxford Street',
-                'Fifth Avenue', 'Orchard Road', 'Las Ramblas', 'Ginza'
-            ];
-        }
         
         // Generuj adresy
         const addresses = streets.map(street => `${street} ${Math.floor(Math.random() * 100) + 1}, ${cityName}`);
         
-        // ... existing code ...
+        // Generuj przykładowe hotele
+        const mockHotels = [];
+        
+        for (let i = 0; i < 10; i++) {
+            // Generuj unikalny ID hotelu
+            const hotelId = `${cityCode}-${i + 1}`.padStart(6, '0');
+            
+            // Wybierz losowy adres
+            const address = addresses[i % addresses.length];
+            
+            // Generuj losową cenę w zależności od miasta
+            let basePrice;
+            if (['PAR', 'LON', 'NYC', 'TYO', 'DXB'].includes(cityCode)) {
+                // Droższe miasta
+                basePrice = Math.floor(Math.random() * 300) + 200;
+            } else if (['WAW', 'KRK', 'BER', 'ROM', 'MAD', 'BCN'].includes(cityCode)) {
+                // Średnio drogie miasta
+                basePrice = Math.floor(Math.random() * 200) + 150;
+            } else {
+                // Tańsze miasta
+                basePrice = Math.floor(Math.random() * 150) + 100;
+            }
+            
+            // Dodaj mnożnik w zależności od liczby osób
+            const price = basePrice * (adults || 1);
+            
+            // Generuj współrzędne geograficzne na podstawie miasta
+            let baseLat, baseLng;
+            switch (cityCode) {
+                case 'WAW':
+                    baseLat = 52.2297; baseLng = 21.0122; break;
+                case 'KRK':
+                    baseLat = 50.0647; baseLng = 19.9450; break;
+                case 'GDN':
+                    baseLat = 54.3520; baseLng = 18.6466; break;
+                case 'WRO':
+                    baseLat = 51.1079; baseLng = 17.0385; break;
+                case 'POZ':
+                    baseLat = 52.4064; baseLng = 16.9252; break;
+                case 'PAR':
+                    baseLat = 48.8566; baseLng = 2.3522; break;
+                case 'LON':
+                    baseLat = 51.5074; baseLng = -0.1278; break;
+                case 'BER':
+                    baseLat = 52.5200; baseLng = 13.4050; break;
+                case 'ROM':
+                    baseLat = 41.9028; baseLng = 12.4964; break;
+                case 'NYC':
+                    baseLat = 40.7128; baseLng = -74.0060; break;
+                default:
+                    baseLat = 50.0000; baseLng = 20.0000;
+            }
+            
+            // Dodaj małe losowe odchylenie do współrzędnych
+            const latitude = baseLat + (Math.random() - 0.5) * 0.05;
+            const longitude = baseLng + (Math.random() - 0.5) * 0.05;
+            
+            // Generuj losowe udogodnienia
+            const allAmenities = [
+                'Bezpłatne Wi-Fi', 'Klimatyzacja', 'Basen', 'Siłownia', 'Spa',
+                'Restauracja', 'Bar', 'Parking', 'Obsługa pokoju', 'Pralnia',
+                'Centrum biznesowe', 'Sala konferencyjna', 'Zwierzęta dozwolone',
+                'Transfer z/na lotnisko', 'Śniadanie w cenie'
+            ];
+            
+            // Wybierz losową liczbę udogodnień (od 3 do 10)
+            const numAmenities = Math.floor(Math.random() * 8) + 3;
+            const shuffledAmenities = [...allAmenities].sort(() => 0.5 - Math.random());
+            const amenities = shuffledAmenities.slice(0, numAmenities);
+            
+            // Generuj losową ocenę (od 3.0 do 5.0)
+            const rating = (Math.random() * 2 + 3).toFixed(1);
+            
+            // Generuj losową liczbę gwiazdek (od 2 do 5)
+            const stars = Math.floor(Math.random() * 4) + 2;
+            
+            // Generuj losową liczbę opinii (od 10 do 500)
+            const reviewCount = Math.floor(Math.random() * 490) + 10;
+            
+            // Wybierz losowe zdjęcie z Unsplash
+            const imageCategories = ['hotel', 'room', 'bedroom', 'interior', 'architecture'];
+            const imageCategory = imageCategories[Math.floor(Math.random() * imageCategories.length)];
+            const imageId = Math.floor(Math.random() * 1000);
+            const images = [
+                `https://source.unsplash.com/random/800x600?${imageCategory}&sig=${imageId}`,
+                `https://source.unsplash.com/random/800x600?${imageCategory}&sig=${imageId + 1}`,
+                `https://source.unsplash.com/random/800x600?${imageCategory}&sig=${imageId + 2}`
+            ];
+            
+            // Dodaj hotel do listy
+            mockHotels.push({
+                id: hotelId,
+                name: `Hotel ${cityName} ${i + 1}`,
+                city: cityName,
+                address: address,
+                description: `Komfortowy hotel położony w centrum miasta ${cityName}. Oferuje przestronne pokoje, doskonałą obsługę i wiele udogodnień dla gości biznesowych i turystów.`,
+                price: price,
+                currency: 'PLN',
+                rating: parseFloat(rating),
+                coordinates: {
+                    latitude: latitude,
+                    longitude: longitude
+                },
+                images: images,
+                amenities: amenities,
+                stars: stars,
+                reviewScore: parseFloat(rating),
+                reviewCount: reviewCount
+            });
+        }
+        
+        return mockHotels;
     }
 }
 

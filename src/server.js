@@ -27,14 +27,34 @@ app.use(express.urlencoded({ extended: true }));
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, '../public')));
-app.use('/hotels', hotelsRoutes);
 
-// Obsługa sesji
+// Obsługa sesji - zmodyfikowana dla lepszej persystencji
 app.use(session({
     secret: 'tajny_klucz',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
+    cookie: { 
+        secure: process.env.NODE_ENV === 'production',
+        maxAge: 24 * 60 * 60 * 1000 // 24 godziny
+    }
 }));
+
+// Middleware do przekazywania informacji o zalogowanym użytkowniku do szablonów
+app.use((req, res, next) => {
+    // Zapewnienie, że res.locals jest dostępne
+    if (!res.locals) {
+        res.locals = {};
+    }
+    
+    // Przekazanie danych użytkownika do szablonów
+    res.locals.user = req.session.user;
+    res.locals.userId = req.session.userId;
+    res.locals.isAdmin = req.session.isAdmin;
+    
+    next();
+});
+
+app.use('/hotels', hotelsRoutes);
 
 // EJS
 app.set('view engine', 'ejs');
@@ -42,7 +62,9 @@ app.set('views', path.join(__dirname, '../views'));
 
 // Homepage route
 app.get('/', (req, res) => {
-    res.render('home');
+    res.render('index', {
+        title: 'Booking - Znajdź idealny hotel'
+    });
 });
 
 // Social media routes
@@ -75,7 +97,10 @@ app.post('/register', async (req, res) => {
     try {
         const existingUser = await User.findOne({ email });
         if (existingUser) {
-            return res.send('Użytkownik o takim e-mailu już istnieje.');
+            return res.render('register', {
+                title: 'Rejestracja',
+                error: 'Użytkownik o takim e-mailu już istnieje.'
+            });
         }
 
         const hashedPassword = await bcrypt.hash(password, 10);
@@ -86,10 +111,18 @@ app.post('/register', async (req, res) => {
         });
 
         await newUser.save();
-        res.redirect('/login');
+        
+        // Automatycznie zaloguj użytkownika po rejestracji
+        req.session.user = newUser.email;
+        req.session.userId = newUser._id;
+        
+        res.redirect('/');
     } catch (err) {
         console.error(err);
-        res.send('Wystąpił błąd podczas rejestracji.');
+        res.render('register', {
+            title: 'Rejestracja',
+            error: 'Wystąpił błąd podczas rejestracji. Spróbuj ponownie później.'
+        });
     }
 });
 
@@ -105,17 +138,43 @@ app.post('/login', async (req, res) => {
 
     try {
         const user = await User.findOne({ email });
-        if (!user) return res.send('Nieprawidłowy email lub hasło.');
+        if (!user) {
+            return res.render('login', {
+                title: 'Logowanie',
+                error: 'Nieprawidłowy email lub hasło.'
+            });
+        }
 
         const isMatch = await bcrypt.compare(password, user.password);
-        if (!isMatch) return res.send('Nieprawidłowy email lub hasło.');
+        if (!isMatch) {
+            return res.render('login', {
+                title: 'Logowanie',
+                error: 'Nieprawidłowy email lub hasło.'
+            });
+        }
 
         req.session.user = user.email;
-        res.send('Zalogowano pomyślnie!');
+        req.session.userId = user._id;
+        req.session.isAdmin = user.isAdmin || false;
+        
+        res.redirect('/');
     } catch (err) {
         console.error(err);
-        res.send('Wystąpił błąd podczas logowania.');
+        res.render('login', {
+            title: 'Logowanie',
+            error: 'Wystąpił błąd podczas logowania. Spróbuj ponownie później.'
+        });
     }
+});
+
+// Wylogowanie
+app.get('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Błąd podczas wylogowywania:', err);
+        }
+        res.redirect('/');
+    });
 });
 
 // Start serwera

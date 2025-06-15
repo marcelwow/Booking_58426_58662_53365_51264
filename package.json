@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "amadeus": "^11.0.0",
+    "axios": "^1.10.0",
     "bcrypt": "^6.0.0",
     "bootstrap": "^5.3.5",
     "dotenv": "^16.5.0",
