@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #4a6bff;
+            --secondary-color: #6c757d;
+            --accent-color: #764ba2;
+            --light-bg: #f8f9fa;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #f5f7fa;
+            color: #333;
+        }
+        
+        .navbar {
+            background-color: white !important;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        
+        .navbar-brand {
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .nav-link {
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s;
+        }
+        
+        .nav-link:hover {
+            color: var(--primary-color);
+        }
+        
+        .header-section {
+            background: linear-gradient(135deg, #4a6bff 0%, #764ba2 100%);
+            color: white;
+            padding: 1.5rem 0;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        
+        .back-button {
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255,255,255,0.2);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            margin-right: 15px;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background-color: rgba(255,255,255,0.3);
+            color: white;
+            transform: translateX(-3px);
+        }
+        
+        .hotel-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            margin-bottom: 1.5rem;
+            overflow: hidden;
+            border: none;
+        }
+        
+        .gallery-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            background-color: white;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+        }
+        
+        .main-image {
+            width: 100%;
+            height: 400px;
+            object-fit: cover;
+            transition: transform 0.3s ease;
+        }
+        
+        .thumbnails-row {
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background-color: white;
+            border-top: 1px solid #eee;
+            overflow-x: auto;
+            scrollbar-width: thin;
+        }
+        
+        .thumbnail {
+            width: 80px;
+            height: 60px;
+            object-fit: cover;
+            border-radius: 6px;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: all 0.2s ease;
+        }
+        
+        .thumbnail:hover {
+            transform: translateY(-2px);
+        }
+        
+        .thumbnail.active {
+            border-color: var(--primary-color);
+        }
+        
+        .amenity-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-size: 0.95rem;
+        }
+        
+        .amenity-icon {
+            width: 24px;
+            height: 24px;
+            background-color: #e9f0ff;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-right: 10px;
+            color: var(--primary-color);
+        }
+        
+        .price-card {
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+            padding: 1.5rem;
+            position: sticky;
+            top: 20px;
+        }
+        
+        .price-tag {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: var(--primary-color);
+        }
+        
+        .price-subtext {
+            color: var(--secondary-color);
+            font-size: 0.85rem;
+        }
+        
+        .rating-stars {
+            color: #ffc107;
+            margin-right: 5px;
+        }
+        
+        .book-button {
+            background: linear-gradient(135deg, #4a6bff 0%, #764ba2 100%);
+            border: none;
+            font-weight: 600;
+            padding: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .book-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(74, 107, 255, 0.3);
+        }
+        
+        .section-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #333;
+        }
+        
+        .map-container {
+            height: 350px;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+        
+        #map {
+            width: 100%;
+            height: 100%;
+        }
+        
+        .address-info {
+            margin-top: 1rem;
+        }
+        
+        .address-info i {
+            color: var(--primary-color);
+            margin-right: 8px;
+            width: 16px;
+        }
+        
+        .form-control:focus {
+            box-shadow: 0 0 0 3px rgba(74, 107, 255, 0.25);
+            border-color: var(--primary-color);
+        }
+        
+        .modal-header {
+            background: linear-gradient(135deg, #4a6bff 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .btn-close {
+            filter: brightness(0) invert(1);
+        }
+        
+        .security-badge {
+            display: flex;
+            align-items: center;
+            background-color: #e9f0ff;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-top: 1.5rem;
+        }
+        
+        .security-badge i {
+            font-size: 1.5rem;
+            color: var(--primary-color);
+            margin-right: 1rem;
+        }
+        
+        /* Responsywność */
+        @media (max-width: 768px) {
+            .main-image {
+                height: 300px;
+            }
+            
+            .price-card {
+                position: static;
+                margin-bottom: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Include the header partial -->
+    <%- include('partials/html_header', {title: hotel.name}) %>
+
+    <!-- Header -->
+    <header class="header-section">
+        <div class="container">
+            <div class="d-flex align-items-center">
+                <a href="javascript:history.back()" class="back-button text-decoration-none">
+                    <i class="fas fa-arrow-left"></i>
+                </a>
+                <div>
+                    <h1 class="h3 mb-0"><%= hotel.name %></h1>
+                    <p class="mb-0 text-white-50">
+                        <i class="fas fa-map-marker-alt me-1"></i>
+                        <%= hotel.city %><% if (hotel.address) { %>, <%= hotel.address.split(',')[0] %><% } %>
+                    </p>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="container my-4">
+        <div class="row g-4">
+            <!-- Left Column - Hotel Details -->
+            <div class="col-lg-8">
+                <!-- Gallery -->
+                <div class="gallery-container">
+                    <% if (hotel.images && hotel.images.length > 0) { %>
+                        <img id="mainImage" src="<%= hotel.images[0] %>" alt="<%= hotel.name %>" class="main-image"
+                             onerror="this.src='https://via.placeholder.com/800x400?text=Brak+Zdjęcia'">
+                        
+                        <div class="thumbnails-row">
+                            <% hotel.images.forEach((image, index) => { %>
+                                <img src="<%= image %>" 
+                                     class="thumbnail <%= index === 0 ? 'active' : '' %>" 
+                                     alt="<%= hotel.name %> zdjęcie <%= index + 1 %>"
+                                     onclick="changeMainImage(this, '<%= image %>')"
+                                     onerror="this.src='https://via.placeholder.com/100x100?text=Brak+Zdjęcia'">
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <div class="text-center p-5">
+                            <i class="fas fa-image fa-3x text-muted mb-3"></i>
+                            <p>Brak dostępnych zdjęć dla tego hotelu.</p>
+                        </div>
+                    <% } %>
+                </div>
+                
+                <!-- Hotel Info -->
+                <div class="hotel-card p-4">
+                    <h2 class="section-title">O hotelu</h2>
+                    <% if (hotel.description) { %>
+                        <p><%= hotel.description %></p>
+                    <% } else { %>
+                        <p class="text-muted">Brak dostępnego opisu dla tego hotelu.</p>
+                    <% } %>
+                </div>
+                
+                <!-- Amenities -->
+                <div class="hotel-card p-4">
+                    <h2 class="section-title">Udogodnienia</h2>
+                    <% if (hotel.amenities && hotel.amenities.length > 0) { %>
+                        <div class="row">
+                            <% hotel.amenities.forEach(amenity => { %>
+                                <div class="col-md-6">
+                                    <div class="amenity-item">
+                                        <div class="amenity-icon">
+                                            <i class="fas fa-check"></i>
+                                        </div>
+                                        <%= amenity %>
+                                    </div>
+                                </div>
+                            <% }); %>
+                        </div>
+                    <% } else { %>
+                        <p class="text-muted">Brak informacji o udogodnieniach.</p>
+                    <% } %>
+                </div>
+                
+                <!-- Location -->
+                <% if (hotel.coordinates) { %>
+                <div class="hotel-card p-4">
+                    <h2 class="section-title">Lokalizacja</h2>
+                    <div class="map-container">
+                        <div id="map"></div>
+                    </div>
+                    <div class="address-info">
+                        <p class="mb-2">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <%= hotel.address || 'Adres niedostępny' %>
+                        </p>
+                        <p class="mb-2">
+                            <i class="fas fa-city"></i>
+                            <%= hotel.city %>
+                        </p>
+                        <p class="small text-muted mb-0">
+                            <i class="fas fa-location-arrow"></i>
+                            Współrzędne: <%= hotel.coordinates.latitude %>, <%= hotel.coordinates.longitude %>
+                        </p>
+                    </div>
+                </div>
+                <% } %>
+            </div>
+            
+            <!-- Right Column - Booking -->
+            <div class="col-lg-4">
+                <div class="price-card">
+                    <!-- Rating -->
+                    <% if (hotel.rating > 0) { %>
+                        <div class="mb-3">
+                            <span class="rating-stars">
+                                <% for(let i = 1; i <= 5; i++) { %>
+                                    <% if (i <= hotel.rating) { %>
+                                        <i class="fas fa-star"></i>
+                                    <% } else { %>
+                                        <i class="far fa-star"></i>
+                                    <% } %>
+                                <% } %>
+                            </span>
+                            <span class="fw-semibold"><%= hotel.rating %>/5</span>
+                        </div>
+                    <% } %>
+                    
+                    <!-- Price -->
+                    <% if (hotel.price) { %>
+                        <div class="price-tag mb-1">
+                            <%= hotel.price %> <%= hotel.currency %>
+                        </div>
+                        
+                        <% if (hotel.currency !== 'PLN') { %>
+                            <div class="text-success fw-bold mb-2">
+                                ≈ <%= (hotel.price * getExchangeRate(hotel.currency, 'PLN')).toFixed(2) %> PLN
+                            </div>
+                        <% } %>
+                        
+                        <p class="price-subtext mb-4">* Cena za pokój za noc</p>
+                    <% } else { %>
+                        <p class="text-muted">Cena niedostępna</p>
+                    <% } %>
+                    
+                    <!-- Booking Form -->
+                    <form id="bookingForm">
+                        <input type="hidden" id="hotelId" value="<%= hotel.id %>">
+                        <input type="hidden" id="hotelName" value="<%= hotel.name %>">
+                        <input type="hidden" id="price" value="<%= hotel.price %>">
+                        <input type="hidden" id="currency" value="<%= hotel.currency %>">
+                        
+                        <div class="mb-3">
+                            <label for="checkInDate" class="form-label">Data przyjazdu</label>
+                            <input type="date" class="form-control" id="checkInDate" required>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="checkOutDate" class="form-label">Data wyjazdu</label>
+                            <input type="date" class="form-control" id="checkOutDate" required>
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="adults" class="form-label">Liczba osób</label>
+                            <select class="form-control" id="adults" required>
+                                <% for (let i = 1; i <= 10; i++) { %>
+                                    <option value="<%= i %>">
+                                        <%= i %> <%= i === 1 ? 'osoba' : (i < 5 ? 'osoby' : 'osób') %>
+                                    </option>
+                                <% } %>
+                            </select>
+                        </div>
+                        
+                        <button type="button" class="btn btn-primary book-button w-100" 
+                                data-bs-toggle="modal" data-bs-target="#bookingModal">
+                            <i class="fas fa-calendar-check me-2"></i>
+                            Zarezerwuj teraz
+                        </button>
+                    </form>
+                    
+                    <!-- Security Badge -->
+                    <div class="security-badge">
+                        <i class="fas fa-shield-alt"></i>
+                        <div>
+                            <h6 class="mb-0">Bezpieczna rezerwacja</h6>
+                            <small class="text-muted">Brak opłat za rezerwację i anulowanie</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Booking Modal -->
+    <div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bookingModalLabel">Rezerwacja hotelu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <h4><%= hotel.name %></h4>
+                        <p class="text-muted mb-1">
+                            <i class="fas fa-map-marker-alt me-1"></i>
+                            <%= hotel.city %><% if (hotel.address) { %>, <%= hotel.address %><% } %>
+                        </p>
+                        <div id="bookingDates" class="small text-muted mb-2"></div>
+                        <% if (hotel.price) { %>
+                            <p class="fw-bold">
+                                Cena: <span id="bookingPrice"><%= hotel.price %> <%= hotel.currency %></span>
+                                <% if (hotel.currency !== 'PLN') { %>
+                                    (≈ <%= (hotel.price * getExchangeRate(hotel.currency, 'PLN')).toFixed(2) %> PLN)
+                                <% } %>
+                            </p>
+                        <% } %>
+                    </div>
+
+                    <form id="bookingFormFinal">
+                        <div class="mb-3">
+                            <label for="guestName" class="form-label">Imię i nazwisko</label>
+                            <input type="text" class="form-control" id="guestName" name="guestName" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="guestEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="guestEmail" name="guestEmail" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="guestPhone" class="form-label">Telefon</label>
+                            <input type="tel" class="form-control" id="guestPhone" name="guestPhone" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="specialRequests" class="form-label">Specjalne wymagania (opcjonalnie)</label>
+                            <textarea class="form-control" id="specialRequests" name="specialRequests" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Anuluj</button>
+                    <button type="button" class="btn btn-primary" onclick="submitBooking()">
+                        <i class="fas fa-check me-1"></i>
+                        Potwierdź rezerwację
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Google Maps API -->
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBNLrJhOMz6idD05pzfn5lhA-TAw-mAZCU&callback=initMap" async defer></script>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        // Inicjalizacja mapy Google
+        function initMap() {
+            <% if (hotel.coordinates) { %>
+                const hotelLocation = { 
+                    lat: <%= hotel.coordinates.latitude %>, 
+                    lng: <%= hotel.coordinates.longitude %> 
+                };
+                
+                const map = new google.maps.Map(document.getElementById("map"), {
+                    zoom: 15,
+                    center: hotelLocation,
+                    mapTypeControl: true,
+                    streetViewControl: true,
+                    fullscreenControl: true,
+                    zoomControl: true,
+                });
+                
+                // Dodaj marker hotelu
+                const marker = new google.maps.Marker({
+                    position: hotelLocation,
+                    map: map,
+                    title: "<%= hotel.name %>",
+                    animation: google.maps.Animation.DROP
+                });
+                
+                // Dodaj okno informacyjne
+                const infoWindow = new google.maps.InfoWindow({
+                    content: `
+                        <div style="padding: 10px;">
+                            <h5 style="margin: 0 0 5px 0;"><%= hotel.name %></h5>
+                            <p style="margin: 0;"><%= hotel.address || hotel.city %></p>
+                        </div>
+                    `
+                });
+                
+                // Pokaż okno informacyjne po kliknięciu na marker
+                marker.addListener("click", () => {
+                    infoWindow.open(map, marker);
+                });
+                
+                // Automatycznie otwórz okno informacyjne
+                infoWindow.open(map, marker);
+            <% } %>
+        }
+        
+        // Inicjalizacja przy załadowaniu strony
+        document.addEventListener('DOMContentLoaded', function() {
+            // Ustawienie minimalnej daty przyjazdu na dzisiaj
+            const today = new Date().toISOString().split('T')[0];
+            const checkInInput = document.getElementById('checkInDate');
+            const checkOutInput = document.getElementById('checkOutDate');
+            
+            if (checkInInput) {
+                checkInInput.min = today;
+                checkInInput.value = today;
+            }
+            
+            if (checkOutInput) {
+                // Ustawienie daty wyjazdu na dzień po przyjeździe
+                const tomorrow = new Date();
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                checkOutInput.min = tomorrow.toISOString().split('T')[0];
+                checkOutInput.value = tomorrow.toISOString().split('T')[0];
+            }
+            
+            // Aktualizacja daty wyjazdu przy zmianie daty przyjazdu
+            if (checkInInput && checkOutInput) {
+                checkInInput.addEventListener('change', function() {
+                    const nextDay = new Date(this.value);
+                    nextDay.setDate(nextDay.getDate() + 1);
+                    
+                    const nextDayString = nextDay.toISOString().split('T')[0];
+                    checkOutInput.min = nextDayString;
+                    
+                    if (checkOutInput.value < nextDayString) {
+                        checkOutInput.value = nextDayString;
+                    }
+                });
+            }
+            
+            // Aktualizacja wyświetlanych dat w modalu
+            updateBookingDates();
+        });
+        
+        // Zmiana głównego zdjęcia w galerii
+        function changeMainImage(thumb, imgSrc) {
+            if (thumb.classList.contains('active')) return;
+            
+            const mainImage = document.getElementById('mainImage');
+            
+            // Płynna animacja zmiany zdjęcia
+            mainImage.style.opacity = '0.5';
+            
+            setTimeout(() => {
+                mainImage.src = imgSrc;
+                mainImage.style.opacity = '1';
+                
+                // Aktualizacja aktywnej miniaturki
+                document.querySelectorAll('.thumbnail').forEach(el => {
+                    el.classList.remove('active');
+                });
+                
+                thumb.classList.add('active');
+            }, 200);
+        }
+        
+        // Aktualizacja dat w modalu rezerwacji
+        function updateBookingDates() {
+            const checkInDate = document.getElementById('checkInDate').value;
+            const checkOutDate = document.getElementById('checkOutDate').value;
+            const adults = document.getElementById('adults').value;
+            
+            if (checkInDate && checkOutDate) {
+                const formattedCheckIn = new Date(checkInDate).toLocaleDateString('pl-PL');
+                const formattedCheckOut = new Date(checkOutDate).toLocaleDateString('pl-PL');
+                
+                document.getElementById('bookingDates').textContent = 
+                    `${formattedCheckIn} - ${formattedCheckOut}, ${adults} ${adults == 1 ? 'osoba' : (adults < 5 ? 'osoby' : 'osób')}`;
+            }
+        }
+        
+        // Aktualizacja dat przy otwarciu modalu
+        document.getElementById('bookingModal').addEventListener('show.bs.modal', updateBookingDates);
+        
+        // Nasłuchiwanie zmian w formularzu
+        document.getElementById('checkInDate').addEventListener('change', updateBookingDates);
+        document.getElementById('checkOutDate').addEventListener('change', updateBookingDates);
+        document.getElementById('adults').addEventListener('change', updateBookingDates);
+        
+        // Wysyłka rezerwacji
+        async function submitBooking() {
+            const hotelId = document.getElementById('hotelId').value;
+            const hotelName = document.getElementById('hotelName').value;
+            const checkInDate = document.getElementById('checkInDate').value;
+            const checkOutDate = document.getElementById('checkOutDate').value;
+            const adults = document.getElementById('adults').value;
+            const price = document.getElementById('price').value;
+            const currency = document.getElementById('currency').value;
+            const guestName = document.getElementById('guestName').value;
+            const guestEmail = document.getElementById('guestEmail').value;
+            const guestPhone = document.getElementById('guestPhone').value;
+            const specialRequests = document.getElementById('specialRequests').value;
+
+            // Validacja formularza
+            if (!checkInDate || !checkOutDate || !guestName || !guestEmail || !guestPhone) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Niepoprawne dane',
+                    text: 'Proszę wypełnić wszystkie wymagane pola'
+                });
+                return;
+            }
+
+            try {
+                const response = await fetch('/hotels/book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        hotelId,
+                        hotelName,
+                        checkInDate,
+                        checkOutDate,
+                        adults,
+                        guestName,
+                        guestEmail,
+                        guestPhone,
+                        specialRequests,
+                        price,
+                        currency
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Zamknij modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('bookingModal'));
+                    modal.hide();
+
+                    // Pokaż komunikat sukcesu
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Rezerwacja przyjęta!',
+                        text: `Numer rezerwacji: ${result.bookingDetails.bookingId}`,
+                        confirmButtonText: 'OK'
+                    });
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Błąd rezerwacji',
+                    text: error.message || 'Wystąpił błąd podczas rezerwacji. Spróbuj ponownie później.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        }
+    </script>
+</body>
+</html> 
