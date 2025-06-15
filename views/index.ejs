@@ -1,27 +1,50 @@
 <%- include('partials/html_header') %>
 <%- include('partials/navbar') %>
 <div class="container">
-    <form action="/search" method="GET">
-        <div class="row">
-            <div class="col-sm-4">
-                <input type="text" class="form-control" placeholder="Where are you going?" aria-label="First name">
+    <!-- Główny formularz wyszukiwania -->
+    <div class="row mb-4">
+        <div class="col-12 text-center">
+            <h2 class="mb-4">Znajdź swój idealny hotel</h2>
+            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                <a href="/hotels/search" class="btn btn-primary btn-lg me-md-2">
+                    <i class="bi bi-search"></i> Wyszukaj hotele przez API
+                </a>
+                <a href="/hotels" class="btn btn-outline-primary btn-lg">
+                    <i class="bi bi-list"></i> Zobacz hotele lokalne
+                </a>
             </div>
-            <div class="col-sm-2">
-                <input type="date" class="form-control" placeholder="From date" aria-label="Last name">
+        </div>
+    </div>
+
+    <!-- Alternatywny formularz wyszukiwania -->
+    <form action="/hotels/search" method="POST" class="bg-light p-4 rounded mb-4">
+        <div class="row g-3">
+            <div class="col-md-3">
+                <label for="cityCode" class="form-label">Kod miasta</label>
+                <input type="text" name="cityCode" id="cityCode" class="form-control" 
+                       placeholder="WAW, PAR, LON" maxlength="3" style="text-transform: uppercase;">
             </div>
-            <div class="col-sm-2">
-                <input type="date" class="form-control" placeholder="To date" aria-label="Last name">
+            <div class="col-md-2">
+                <label for="checkInDate" class="form-label">Zameldowanie</label>
+                <input type="date" name="checkInDate" id="checkInDate" class="form-control">
             </div>
-            <div class="col-sm-2">
-                <div class="btn-group" role="group" aria-label="Basic example">
-                    <button type="button" class="btn btn-primary" id="guests_subtract"><i class="bi bi-dash"></i></button>
-                    <input type="number" min="1" max="12" class="form-control" placeholder="Guests" aria-label="Guests" value="1" id="guests_value" hidden>
-                    <button type="button" class="btn btn-primary" id="guests_view">1</button>
-                    <button type="button" class="btn btn-primary" id="guests_add"><i class="bi bi-plus"></i></button>
+            <div class="col-md-2">
+                <label for="checkOutDate" class="form-label">Wymeldowanie</label>
+                <input type="date" name="checkOutDate" id="checkOutDate" class="form-control">
                 </div>
+            <div class="col-md-2">
+                <label for="adults" class="form-label">Osoby</label>
+                <select name="adults" id="adults" class="form-control">
+                    <option value="1">1 osoba</option>
+                    <option value="2" selected>2 osoby</option>
+                    <option value="3">3 osoby</option>
+                    <option value="4">4 osoby</option>
+                </select>
             </div>
-            <div class="col-sm-2">
-                <button type="submit" class="btn btn-light"><i class="bi bi-search"></i> Szukaj</button>
+            <div class="col-md-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="bi bi-search"></i> Wyszukaj
+                </button>
             </div>
         </div>
     </form>

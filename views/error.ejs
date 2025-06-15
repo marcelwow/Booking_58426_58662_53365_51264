@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .error-container {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            color: white;
+        }
+        .error-content {
+            text-align: center;
+            padding: 2rem;
+        }
+        .error-icon {
+            font-size: 6rem;
+            margin-bottom: 1rem;
+            opacity: 0.8;
+        }
+        .error-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            font-weight: 300;
+        }
+        .error-message {
+            font-size: 1.2rem;
+            margin-bottom: 2rem;
+            opacity: 0.9;
+        }
+        .btn-back {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid rgba(255,255,255,0.3);
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 25px;
+            font-weight: 500;
+            transition: all 0.3s;
+            margin: 0.5rem;
+        }
+        .btn-back:hover {
+            background: rgba(255,255,255,0.3);
+            border-color: rgba(255,255,255,0.5);
+            color: white;
+            transform: translateY(-2px);
+        }
+        .error-details {
+            background: rgba(255,255,255,0.1);
+            border-radius: 10px;
+            padding: 1rem;
+            margin-top: 2rem;
+            text-align: left;
+        }
+        .animated-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            z-index: -1;
+        }
+        .animated-bg::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: repeating-linear-gradient(
+                45deg,
+                transparent,
+                transparent 35px,
+                rgba(255,255,255,0.03) 35px,
+                rgba(255,255,255,0.03) 70px
+            );
+            animation: slide 20s linear infinite;
+        }
+        @keyframes slide {
+            0% { transform: translate(-50%, -50%) rotate(0deg); }
+            100% { transform: translate(-50%, -50%) rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="error-container">
+        <div class="animated-bg"></div>
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-md-8 col-lg-6">
+                    <div class="error-content">
+                        <div class="error-icon">
+                            <i class="fas fa-exclamation-triangle"></i>
+                        </div>
+                        
+                        <h1 class="error-title"><%= title %></h1>
+                        
+                        <p class="error-message">
+                            <%= message %>
+                        </p>
+
+                        <div class="action-buttons">
+                            <a href="javascript:history.back()" class="btn btn-back">
+                                <i class="fas fa-arrow-left me-2"></i>
+                                Wróć
+                            </a>
+                            
+                            <a href="/" class="btn btn-back">
+                                <i class="fas fa-home me-2"></i>
+                                Strona główna
+                            </a>
+                            
+                            <a href="/hotels/search" class="btn btn-back">
+                                <i class="fas fa-search me-2"></i>
+                                Wyszukaj hotele
+                            </a>
+                        </div>
+
+                        <% if (typeof error !== 'undefined' && error) { %>
+                            <div class="error-details">
+                                <h5>
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    Szczegóły błędu:
+                                </h5>
+                                <p class="mb-0">
+                                    <%= error %>
+                                </p>
+                            </div>
+                        <% } %>
+
+                        <div class="mt-4">
+                            <p class="small opacity-75">
+                                Jeśli problem się powtarza, skontaktuj się z nami:
+                                <br>
+                                <a href="mailto:support@booking.com" class="text-white">
+                                    <i class="fas fa-envelope me-1"></i>
+                                    support@booking.com
+                                </a>
+                                lub
+                                <a href="tel:+48123456789" class="text-white">
+                                    <i class="fas fa-phone me-1"></i>
+                                    +48 123 456 789
+                                </a>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html> 

@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><%= title %></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        .header-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 2rem 0;
+        }
+        .hotel-card {
+            border: none;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        .hotel-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+        .hotel-image {
+            height: 200px;
+            object-fit: cover;
+            border-radius: 12px 12px 0 0;
+        }
+        .price-badge {
+            background: #28a745;
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        .rating-stars {
+            color: #ffc107;
+        }
+        .search-summary {
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+        }
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #6c757d;
+        }
+        .back-to-search {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <div class="container">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <h1 class="h3 mb-2">
+                        <i class="fas fa-hotel me-2"></i>
+                        <% if (searchParams.destination) { %>
+                            Hotele w <%= searchParams.destination %>
+                        <% } else { %>
+                            Hotele w <%= searchParams.cityCode %>
+                        <% } %>
+                    </h1>
+                    <div class="search-summary">
+                        <div class="row">
+                            <div class="col-md-3">
+                                <small>Destynacja:</small><br>
+                                <strong>
+                                    <% if (searchParams.destination) { %>
+                                        <%= searchParams.destination %>
+                                    <% } else { %>
+                                        <%= searchParams.cityCode %>
+                                    <% } %>
+                                </strong>
+                            </div>
+                            <% if (searchParams.checkInDate && searchParams.checkOutDate) { %>
+                            <div class="col-md-4">
+                                <small>Pobyt:</small><br>
+                                <strong>
+                                    <%= new Date(searchParams.checkInDate).toLocaleDateString('pl-PL') %> - 
+                                    <%= new Date(searchParams.checkOutDate).toLocaleDateString('pl-PL') %>
+                                </strong>
+                            </div>
+                            <% } %>
+                            <div class="col-md-3">
+                                <small>Osoby:</small><br>
+                                <strong><%= searchParams.adults %> os.</strong>
+                            </div>
+                            <div class="col-md-2">
+                                <small>Wyniki:</small><br>
+                                <strong><%= hotels.length %></strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-end">
+                    <a href="/hotels/search" class="btn btn-light">
+                        <i class="fas fa-edit me-2"></i>
+                        Nowe wyszukiwanie
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container my-4">
+        <% if (noResults) { %>
+            <div class="alert alert-info text-center my-5 p-5">
+                <i class="fas fa-info-circle fa-3x mb-3"></i>
+                <h3 class="mb-3">Nie znaleziono hoteli</h3>
+                <p class="lead mb-4">Nie znaleziono hoteli dla podanych kryteriów. Spróbuj zmienić daty lub destynację.</p>
+                <a href="/" class="btn btn-primary btn-lg">
+                    <i class="fas fa-search me-2"></i>
+                    Nowe wyszukiwanie
+                </a>
+            </div>
+        <% } else if (hotels && hotels.length > 0) { %>
+            <div class="row">
+                <% hotels.forEach(hotel => { %>
+                    <div class="col-12 col-lg-6">
+                        <div class="card hotel-card">
+                            <div class="row g-0">
+                                <div class="col-md-4">
+                                    <% if (hotel.images && hotel.images.length > 0) { %>
+                                        <img src="<%= hotel.images[0] %>" 
+                                             class="hotel-image w-100" 
+                                             alt="<%= hotel.name %>"
+                                             onerror="this.src='https://via.placeholder.com/300x200?text=Hotel'">
+                                    <% } else { %>
+                                        <div class="hotel-image w-100 d-flex align-items-center justify-content-center bg-light">
+                                            <i class="fas fa-hotel fa-3x text-muted"></i>
+                                        </div>
+                                    <% } %>
+                                </div>
+                                <div class="col-md-8">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start mb-2">
+                                            <h5 class="card-title mb-1"><%= hotel.name %></h5>
+                                            <% if (hotel.price) { %>
+                                                <span class="badge price-badge">
+                                                    <%= hotel.price %> <%= hotel.currency %>
+                                                </span>
+                                            <% } %>
+                                        </div>
+
+                                        <p class="text-muted mb-2">
+                                            <i class="fas fa-map-marker-alt me-1"></i>
+                                            <%= hotel.city %>
+                                        </p>
+
+                                        <% if (hotel.address && hotel.address !== 'N/A') { %>
+                                            <p class="small text-muted mb-2">
+                                                <%= hotel.address %>
+                                            </p>
+                                        <% } %>
+
+                                        <% if (hotel.rating > 0) { %>
+                                            <div class="mb-2">
+                                                <span class="rating-stars">
+                                                    <% for(let i = 1; i <= 5; i++) { %>
+                                                        <% if (i <= hotel.rating) { %>
+                                                            <i class="fas fa-star"></i>
+                                                        <% } else { %>
+                                                            <i class="far fa-star"></i>
+                                                        <% } %>
+                                                    <% } %>
+                                                </span>
+                                                <small class="text-muted ms-1">
+                                                    (<%= hotel.rating %>/5)
+                                                </small>
+                                            </div>
+                                        <% } %>
+
+                                        <% if (hotel.description) { %>
+                                            <p>
+                                                <%= hotel.description %>
+                                            </p>
+                                        <% } %>
+
+                                        <% if (hotel.coordinates) { %>
+                                            <p class="small text-muted">
+                                                Współrzędne: <%= hotel.coordinates.latitude %>, <%= hotel.coordinates.longitude %>
+                                            </p>
+                                        <% } %>
+
+                                        <% if (hotel.amenities && hotel.amenities.length > 0) { %>
+                                            <div class="mb-2">
+                                                <% hotel.amenities.slice(0, 3).forEach(amenity => { %>
+                                                    <span class="badge bg-secondary me-1 small">
+                                                        <%= amenity %>
+                                                    </span>
+                                                <% }); %>
+                                                <% if (hotel.amenities.length > 3) { %>
+                                                    <span class="small text-muted">
+                                                        +<%= hotel.amenities.length - 3 %> więcej
+                                                    </span>
+                                                <% } %>
+                                            </div>
+                                        <% } %>
+
+                                        <div class="d-flex justify-content-between align-items-center mt-3">
+                                            <% if (hotel.checkInDate && hotel.checkOutDate) { %>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-calendar me-1"></i>
+                                                    <%= new Date(hotel.checkInDate).toLocaleDateString('pl-PL') %> - 
+                                                    <%= new Date(hotel.checkOutDate).toLocaleDateString('pl-PL') %>
+                                                </small>
+                                            <% } %>
+                                            
+                                            <button class="btn btn-primary btn-sm" 
+                                                    onclick="showBookingModal('<%= hotel.id %>', '<%= hotel.name %>', '<%= hotel.price %>', '<%= hotel.currency %>', '<%= searchParams.checkInDate %>', '<%= searchParams.checkOutDate %>', '<%= searchParams.adults %>')"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#bookingModal">
+                                                <i class="fas fa-calendar-check me-1"></i>
+                                                Zarezerwuj
+                                            </button>
+                                        </div>
+
+                                        <% if (hotel.amenities && hotel.amenities.length > 0) { %>
+                                            <div class="mt-2">
+                                                <small class="text-muted">
+                                                    <i class="fas fa-concierge-bell me-1"></i>
+                                                    <%= hotel.amenities.slice(0, 3).join(', ') %>
+                                                    <% if (hotel.amenities.length > 3) { %>
+                                                        i <%= hotel.amenities.length - 3 %> więcej...
+                                                    <% } %>
+                                                </small>
+                                            </div>
+                                        <% } %>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                <% }); %>
+            </div>
+
+            <!-- Paginacja (placeholder) -->
+            <div class="d-flex justify-content-center mt-4">
+                <nav>
+                    <ul class="pagination">
+                        <li class="page-item active">
+                            <span class="page-link">1</span>
+                        </li>
+                        <!-- Możliwość dodania więcej stron w przyszłości -->
+                    </ul>
+                </nav>
+            </div>
+
+        <% } else { %>
+            <div class="alert alert-warning text-center my-5 p-5">
+                <i class="fas fa-exclamation-triangle fa-3x mb-3"></i>
+                <h3 class="mb-3">Wystąpił problem</h3>
+                <p class="lead mb-4">Nie udało się pobrać listy hoteli. Spróbuj ponownie później.</p>
+                <a href="/" class="btn btn-primary btn-lg">
+                    <i class="fas fa-home me-2"></i>
+                    Powrót do strony głównej
+                </a>
+            </div>
+        <% } %>
+    </div>
+
+    <!-- Przycisk powrotu do wyszukiwania -->
+    <a href="/hotels/search" class="btn btn-primary btn-lg back-to-search rounded-circle" 
+       title="Nowe wyszukiwanie">
+        <i class="fas fa-plus"></i>
+    </a>
+
+    <!-- Modal do rezerwacji -->
+    <div class="modal fade" id="bookingModal" tabindex="-1" aria-labelledby="bookingModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="bookingModalLabel">Rezerwacja hotelu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="bookingForm" action="/hotels/book" method="POST">
+                        <input type="hidden" id="hotelId" name="hotelId">
+                        <input type="hidden" id="hotelName" name="hotelName">
+                        <input type="hidden" id="checkInDate" name="checkInDate">
+                        <input type="hidden" id="checkOutDate" name="checkOutDate">
+                        <input type="hidden" id="adults" name="adults">
+                        <input type="hidden" id="price" name="price">
+                        <input type="hidden" id="currency" name="currency">
+
+                        <div class="mb-3">
+                            <h4 id="hotelNameDisplay" class="mb-2"></h4>
+                            <p id="bookingDates" class="text-muted"></p>
+                            <p id="bookingPrice" class="fw-bold"></p>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="guestName" class="form-label">Imię i nazwisko</label>
+                            <input type="text" class="form-control" id="guestName" name="guestName" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="guestEmail" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="guestEmail" name="guestEmail" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="guestPhone" class="form-label">Telefon</label>
+                            <input type="tel" class="form-control" id="guestPhone" name="guestPhone" required>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="specialRequests" class="form-label">Specjalne wymagania (opcjonalnie)</label>
+                            <textarea class="form-control" id="specialRequests" name="specialRequests" rows="3"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Anuluj</button>
+                    <button type="submit" form="bookingForm" class="btn btn-primary">Potwierdź rezerwację</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // Ładowanie z opóźnieniem dla lepszego UX
+        document.addEventListener('DOMContentLoaded', function() {
+            const hotelCards = document.querySelectorAll('.hotel-card');
+            hotelCards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.opacity = '0';
+                    card.style.transform = 'translateY(20px)';
+                    card.style.transition = 'opacity 0.5s, transform 0.5s';
+                    setTimeout(() => {
+                        card.style.opacity = '1';
+                        card.style.transform = 'translateY(0)';
+                    }, 100);
+                }, index * 100);
+            });
+        });
+
+        function showBookingModal(hotelId, hotelName, price, currency, checkInDate, checkOutDate, adults) {
+            document.getElementById('hotelId').value = hotelId;
+            document.getElementById('hotelName').value = hotelName;
+            document.getElementById('checkInDate').value = checkInDate;
+            document.getElementById('checkOutDate').value = checkOutDate;
+            document.getElementById('adults').value = adults;
+            document.getElementById('price').value = price;
+            document.getElementById('currency').value = currency;
+            
+            document.getElementById('hotelNameDisplay').textContent = hotelName;
+            document.getElementById('bookingDates').textContent = `${new Date(checkInDate).toLocaleDateString('pl-PL')} - ${new Date(checkOutDate).toLocaleDateString('pl-PL')}`;
+            document.getElementById('bookingPrice').textContent = `Cena: ${price} ${currency}`;
+        }
+
+        document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(this);
+            const bookingData = Object.fromEntries(formData.entries());
+
+            try {
+                const response = await fetch('/hotels/book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(bookingData)
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    // Zamknij modal
+                    const modal = bootstrap.Modal.getInstance(document.getElementById('bookingModal'));
+                    modal.hide();
+
+                    // Pokaż komunikat sukcesu
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Rezerwacja przyjęta!',
+                        text: `Numer rezerwacji: ${result.bookingDetails.bookingId}`,
+                        confirmButtonText: 'OK'
+                    });
+
+                    // Wyczyść formularz
+                    this.reset();
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Błąd rezerwacji',
+                    text: error.message || 'Wystąpił błąd podczas rezerwacji. Spróbuj ponownie później.',
+                    confirmButtonText: 'OK'
+                });
+            }
+        });
+    </script>
+
+    <!-- Dodaj SweetAlert2 dla ładniejszych powiadomień -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+</body>
+</html> 

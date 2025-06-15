@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jakaś nazwa - Znajdź Idealny Pobyt</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .hero-section {
+            background: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80');
+            background-size: cover;
+            background-position: center;
+            height: 600px;
+            color: white;
+        }
+        .search-box {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .featured-card {
+            transition: transform 0.3s;
+            cursor: pointer;
+        }
+        .featured-card:hover {
+            transform: translateY(-5px);
+        }
+        .destination-img {
+            height: 200px;
+            object-fit: cover;
+        }
+        .nav-link {
+            color: white !important;
+        }
+        .nav-link:hover {
+            color: #f8f9fa !important;
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container">
+        <a class="navbar-brand" href="/">Jakaś nazwa</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="#"><i class="fas fa-heart"></i> Lista życzeń</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/login"><i class="fas fa-user"></i> Zaloguj się</a>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<section class="hero-section d-flex align-items-center">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-8 mx-auto text-center">
+                <h1 class="display-4 mb-4">Znajdź Idealny Pobyt</h1>
+                <div class="search-box">
+                    <form class="row g-3" action="/hotels/search" method="POST">
+                        <div class="col-md-4">
+                            <input type="text" class="form-control" name="destination" placeholder="Dokąd jedziesz?" required>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" class="form-control" name="checkInDate" placeholder="Przyjazd" required>
+                        </div>
+                        <div class="col-md-3">
+                            <input type="date" class="form-control" name="checkOutDate" placeholder="Wyjazd" required>
+                        </div>
+                        <div class="col-md-2">
+                            <button type="submit" class="btn btn-primary w-100">Szukaj</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5">
+    <div class="container">
+        <h2 class="text-center mb-4">Popularne miejsca wypoczynkowe</h2>
+        <div class="row g-4">
+            <div class="col-md-4">
+                <div class="card featured-card" onclick="searchDestination('Paryż, Francja')">
+                    <img src="https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" class="card-img-top destination-img" alt="Paryż">
+                    <div class="card-body">
+                        <h5 class="card-title">Paryż, Francja</h5>
+                        <p class="card-text">Ceny od 378zł/noc</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card featured-card" onclick="searchDestination('Londyn, UK')">
+                    <img src="https://images.unsplash.com/photo-1533929736458-ca588d08c8be?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" class="card-img-top destination-img" alt="Londyn">
+                    <div class="card-body">
+                        <h5 class="card-title">Londyn, UK</h5>
+                        <p class="card-text">Ceny od 340zł/noc</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card featured-card" onclick="searchDestination('Nowy Jork, USA')">
+                    <img src="https://images.unsplash.com/photo-1496442226666-8d4d0e62e6e9?ixlib=rb-1.2.1&auto=format&fit=crop&w=1950&q=80" class="card-img-top destination-img" alt="Nowy Jork">
+                    <div class="card-body">
+                        <h5 class="card-title">Nowy Jork, USA</h5>
+                        <p class="card-text">Ceny od 493zł/noc</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<section class="py-5 bg-light">
+    <div class="container">
+        <h2 class="text-center mb-4">Dlaczego my?</h2>
+        <div class="row g-4">
+            <div class="col-md-4 text-center">
+                <i class="fas fa-shield-alt fa-3x mb-3 text-primary"></i>
+                <h4>Bezpieczna Rezerwacja</h4>
+                <p>Twoje dane są u nas bezpieczne</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <i class="fas fa-percent fa-3x mb-3 text-primary"></i>
+                <h4>Gwarancja Najlepszej Ceny</h4>
+                <p>Znalazłeś niższą cenę? Dostosujemy się!</p>
+            </div>
+            <div class="col-md-4 text-center">
+                <i class="fas fa-headset fa-3x mb-3 text-primary"></i>
+                <h4>Wsparcie 24/7</h4>
+                <p>Jesteśmy tutaj, aby pomóc o każdej porze</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<footer class="bg-dark text-white py-4">
+    <div class="container">
+        <div class="row justify-content-between">
+            <div class="col-md-5">
+                <h5>BookYourStay</h5>
+                <p>Znajdź idealne zakwaterowanie na całym świecie.</p>
+            </div>
+            <div class="col-md-5 text-md-end">
+                <h5>Obserwuj nas</h5>
+                <div class="social-links mt-2">
+                    <a href="/social/facebook" class="text-white me-4"><i class="fab fa-facebook fa-lg"></i></a>
+                    <a href="/social/twitter" class="text-white me-4"><i class="fab fa-twitter fa-lg"></i></a>
+                    <a href="/social/instagram" class="text-white"><i class="fab fa-instagram fa-lg"></i></a>
+                </div>
+            </div>
+        </div>
+    </div>
+</footer>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // Inicjalizacja datepickerów z domyślnymi datami
+    window.onload = function() {
+        // Ustaw domyślne daty (dzisiaj i jutro)
+        const today = new Date();
+        const tomorrow = new Date();
+        tomorrow.setDate(today.getDate() + 1);
+        
+        // Formatuj daty do formatu YYYY-MM-DD
+        const formatDate = (date) => {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        };
+        
+        // Ustaw wartości w polach daty
+        document.querySelector('input[name="checkInDate"]').value = formatDate(today);
+        document.querySelector('input[name="checkOutDate"]').value = formatDate(tomorrow);
+    };
+
+    // Funkcja do wyszukiwania hoteli w danej destynacji
+    function searchDestination(destination) {
+        // Pobierz formularz
+        const form = document.querySelector('form[action="/hotels/search"]');
+        
+        // Ustaw wartość pola destination
+        const destinationInput = form.querySelector('input[name="destination"]');
+        destinationInput.value = destination;
+        
+        // Wyślij formularz
+        form.submit();
+    }
+</script>
+</body>
+</html> 

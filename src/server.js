@@ -1,3 +1,11 @@
+// Wczytaj zmienne środowiskowe na samym początku
+require('dotenv').config();
+// Debug .env loading
+console.log('dotenv loaded, process.env.AMADEUS_CLIENT_ID =', process.env.AMADEUS_CLIENT_ID);
+console.log('Current working directory:', process.cwd());
+const fs = require('fs');
+console.log('.env file exists:', fs.existsSync('.env'));
+
 const express = require('express');
 const path = require('path');
 const config = require('./config');
@@ -12,6 +20,10 @@ mongoose.connect('mongodb+srv://sebaswit46:Pilkareczna17@cluster0.wkiftrn.mongod
     .then(() => console.log(" Połączono z MongoDB"))
     .catch(err => console.error(" Błąd połączenia z MongoDB:", err));
 
+
+// Middleware do parsowania danych
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Serve static files from the 'public' directory
 app.use(express.static(path.join(__dirname, '../public')));
@@ -30,17 +42,24 @@ app.set('views', path.join(__dirname, '../views'));
 
 // Homepage route
 app.get('/', (req, res) => {
-    res.render('index', {
-        title: 'Booking.com Clone',
-        message: 'Welcome to our Hotel Booking Website'
-    });
+    res.render('home');
 });
 
-app.get('/hotel-view', (req, res) => {
-    res.render('hotel', {
-        title: 'Detailed hotel view',
-        message: 'This is a detailed hotel view'
-    });
+// Social media routes
+app.get('/social/instagram', (req, res) => {
+    res.render('social/instagram');
+});
+
+app.get('/social/facebook', (req, res) => {
+    res.render('social/facebook');
+});
+
+app.get('/social/x', (req, res) => {
+    res.render('social/x');
+});
+
+app.get('/social/twitter', (req, res) => {
+    res.render('social/twitter');
 });
 
 // Rejestracja
