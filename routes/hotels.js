@@ -2,8 +2,11 @@ const express = require('express');
 const router = express.Router();
 const Hotel = require('../models/Hotel');
 const Booking = require('../models/Booking');
-const amadeusService = require('../services/amadeusService');
+const AmadeusService = require('../services/amadeusService');
 const currencyService = require('../services/currencyService');
+
+// Inicjalizacja serwisu Amadeus
+const amadeusService = new AmadeusService();
 
 // Funkcja przeliczania walut do użycia w szablonach
 function getExchangeRate(fromCurrency, toCurrency) {

@@ -5,6 +5,8 @@ const AMADEUS_CLIENT_SECRET = process.env.AMADEUS_CLIENT_SECRET || "wsQAZxV2PoL2
 
 module.exports = {
     PORT,
-    AMADEUS_CLIENT_ID,
-    AMADEUS_CLIENT_SECRET
+    amadeus: {
+        clientId: AMADEUS_CLIENT_ID,
+        clientSecret: AMADEUS_CLIENT_SECRET
+    }
 };

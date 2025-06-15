@@ -5,16 +5,62 @@ const config = require('../src/config');
 
 // Dodajemy debugowanie
 console.log('Config values:');
-console.log('AMADEUS_CLIENT_ID:', config.AMADEUS_CLIENT_ID);
-console.log('AMADEUS_CLIENT_SECRET:', config.AMADEUS_CLIENT_SECRET);
-
-// Inicjalizacja Amadeus client
-const amadeus = new Amadeus({
-    clientId: config.AMADEUS_CLIENT_ID,
-    clientSecret: config.AMADEUS_CLIENT_SECRET
-});
+console.log('AMADEUS_CLIENT_ID:', config.amadeus.clientId);
+console.log('AMADEUS_CLIENT_SECRET:', config.amadeus.clientSecret);
 
 class AmadeusService {
+    constructor() {
+        console.log('Inicjalizacja AmadeusService z kluczami:', {
+            clientId: config.amadeus.clientId,
+            clientSecret: config.amadeus.clientSecret
+        });
+
+        if (!config.amadeus.clientId || !config.amadeus.clientSecret) {
+            throw new Error('Brak wymaganych kluczy API Amadeus');
+        }
+
+        try {
+            this.client = new Amadeus({
+                clientId: config.amadeus.clientId,
+                clientSecret: config.amadeus.clientSecret,
+                hostname: 'test.api.amadeus.com'
+            });
+
+            // Sprawdź czy klient został poprawnie zainicjalizowany
+            if (!this.client) {
+                throw new Error('Nie udało się zainicjalizować klienta Amadeus');
+            }
+
+            console.log('Klient Amadeus został poprawnie zainicjalizowany');
+        } catch (error) {
+            console.error('Błąd podczas inicjalizacji klienta Amadeus:', error);
+            throw error;
+        }
+    }
+
+    // Metoda testowa do sprawdzenia połączenia
+    async testConnection() {
+        try {
+            console.log('Testowanie połączenia z API Amadeus...');
+            const response = await this.client.referenceData.locations.get({
+                keyword: 'PAR',
+                subType: 'CITY'
+            });
+            console.log('Test połączenia udany:', response.data);
+            return true;
+        } catch (error) {
+            console.error('Błąd testu połączenia:', error);
+            if (error.response) {
+                console.error('Szczegóły błędu:', {
+                    status: error.response.statusCode,
+                    headers: error.response.headers,
+                    body: error.response.body
+                });
+            }
+            return false;
+        }
+    }
+
     /**
      * Wyszukuje hotele w podanym mieście
      * @param {string} cityCode - Kod miasta (np. PAR dla Paryża)
@@ -23,33 +69,58 @@ class AmadeusService {
      * @param {string} checkOutDate - Data wymeldowania (YYYY-MM-DD)
      * @returns {Promise<Array>} - Lista hoteli
      */
-    async searchHotels(cityCode, adults = 1, checkInDate, checkOutDate) {
+    async searchHotels(cityCode, checkInDate, checkOutDate, adults) {
         try {
-            console.log(`Wyszukiwanie hoteli w ${cityCode} dla ${adults} osób, ${checkInDate} - ${checkOutDate}`);
-            
-            // Spróbuj użyć API Amadeus
-            try {
-                const response = await amadeus.shopping.hotelOffers.get({
-                    cityCode: cityCode,
-                    adults: adults,
-                    checkInDate: checkInDate,
-                    checkOutDate: checkOutDate,
-                    currency: 'PLN',
-                    roomQuantity: 1
-                });
-                
-                console.log('Amadeus API response:', response.data);
-                
-                // Przetwarzanie odpowiedzi z API
-                return this.formatHotels(response.data);
-            } catch (error) {
-                console.error('Błąd API Amadeus:', error);
-                
-                // Jeśli API nie działa, użyj danych mockowych
-                return this.getMockHotels(cityCode, checkInDate, checkOutDate, adults);
+            // Najpierw przetestuj połączenie
+            const isConnected = await this.testConnection();
+            if (!isConnected) {
+                throw new Error('Nie można połączyć się z API Amadeus');
             }
+
+            console.log('Wyszukiwanie hoteli z parametrami:', {
+                cityCode,
+                checkInDate,
+                checkOutDate,
+                adults
+            });
+
+            // Najpierw pobieramy listę hoteli w mieście
+            const hotelsResponse = await this.client.referenceData.locations.hotels.byCity.get({
+                cityCode: cityCode
+            });
+
+            if (!hotelsResponse.data || hotelsResponse.data.length === 0) {
+                return [];
+            }
+
+            const hotelIds = hotelsResponse.data.map(hotel => hotel.hotelId).join(',');
+            
+            // Następnie pobieramy oferty dla znalezionych hoteli
+            const availabilityResponse = await this.client.shopping.hotelOffers.get({
+                hotelIds: hotelIds,
+                checkInDate: checkInDate,
+                checkOutDate: checkOutDate,
+                adults: adults,
+                roomQuantity: 1,
+                currency: 'EUR'
+            });
+
+            return availabilityResponse.data.map(offer => ({
+                id: offer.hotel.hotelId,
+                name: offer.hotel.name,
+                rating: offer.hotel.rating,
+                address: {
+                    street: offer.hotel.address.lines[0],
+                    city: offer.hotel.address.cityName,
+                    country: offer.hotel.address.countryCode
+                },
+                price: offer.offers[0].price.total,
+                currency: offer.offers[0].price.currency,
+                amenities: offer.hotel.amenities || [],
+                images: offer.hotel.media ? offer.hotel.media.map(m => m.uri) : []
+            }));
         } catch (error) {
-            console.error('Błąd podczas wyszukiwania hoteli:', error);
+            console.error('Błąd API Amadeus:', error);
             throw error;
         }
     }
@@ -63,16 +134,31 @@ class AmadeusService {
      */
     async searchHotelsByLocation(latitude, longitude, radius = 20) {
         try {
-            const response = await amadeus.referenceData.locations.hotels.byGeocode.get({
+            const response = await this.client.referenceData.locations.hotels.byGeocode.get({
                 latitude: latitude,
                 longitude: longitude,
                 radius: radius
             });
 
-            return this.formatBasicHotels(response.data);
+            if (!response.data || response.data.length === 0) {
+                return [];
+            }
+
+            return response.data.map(hotelData => ({
+                id: hotelData.hotelId,
+                name: hotelData.name,
+                rating: hotelData.rating,
+                address: {
+                    street: hotelData.address.lines[0],
+                    city: hotelData.address.cityName,
+                    country: hotelData.address.countryCode
+                },
+                distance: hotelData.distance.value,
+                distanceUnit: hotelData.distance.unit
+            }));
         } catch (error) {
             console.error('Błąd podczas wyszukiwania hoteli po lokalizacji:', error);
-            throw new Error('Nie można wyszukać hoteli w tej lokalizacji.');
+            throw error;
         }
     }
 
@@ -89,7 +175,7 @@ class AmadeusService {
             // Pobierz szczegóły hotelu, w tym zdjęcia
             let hotelDetails = null;
             try {
-                const detailsResponse = await amadeus.referenceData.locations.hotels.byHotels.get({
+                const detailsResponse = await this.client.referenceData.locations.hotels.byHotels.get({
                     hotelIds: hotelData.hotelId
                 });
                 hotelDetails = detailsResponse.data[0];
@@ -187,74 +273,21 @@ class AmadeusService {
      */
     async getCityCode(cityName) {
         try {
-            // Spróbuj użyć API Amadeus
-            try {
-                const response = await amadeus.referenceData.locations.get({
-                    keyword: cityName,
-                    subType: 'CITY'
-                });
-                
-                if (response.data && response.data.length > 0) {
-                    return { 
-                        code: response.data[0].iataCode,
-                        name: response.data[0].name
-                    };
-                }
-            } catch (error) {
-                console.error('Błąd API Amadeus podczas pobierania kodu miasta:', error);
-            }
-            
-            // Jeśli API nie działa, użyj prostego mapowania
-            const cityMapping = {
-                'warszawa': 'WAW',
-                'krakow': 'KRK',
-                'kraków': 'KRK',
-                'gdansk': 'GDN',
-                'gdańsk': 'GDN',
-                'wroclaw': 'WRO',
-                'wrocław': 'WRO',
-                'poznan': 'POZ',
-                'poznań': 'POZ',
-                'szczecin': 'SZZ',
-                'lodz': 'LCJ',
-                'łódź': 'LCJ',
-                'lublin': 'LUZ',
-                'katowice': 'KTW',
-                'rzeszow': 'RZE',
-                'rzeszów': 'RZE',
-                'bydgoszcz': 'BZG',
-                'zakopane': 'ZAK',
-                // Popularne miasta zagraniczne
-                'paris': 'PAR',
-                'paryż': 'PAR',
-                'london': 'LON',
-                'londyn': 'LON',
-                'berlin': 'BER',
-                'rome': 'ROM',
-                'rzym': 'ROM',
-                'madrid': 'MAD',
-                'madryt': 'MAD',
-                'barcelona': 'BCN',
-                'new york': 'NYC',
-                'nowy jork': 'NYC',
-                'tokyo': 'TYO',
-                'tokio': 'TYO',
-                'dubai': 'DXB',
-                'dubaj': 'DXB'
-            };
-            
-            const normalizedCityName = cityName.toLowerCase().trim();
-            if (cityMapping[normalizedCityName]) {
-                return { 
-                    code: cityMapping[normalizedCityName],
-                    name: cityName
+            const response = await this.client.referenceData.locations.get({
+                keyword: cityName,
+                subType: 'CITY'
+            });
+
+            if (response.data && response.data.length > 0) {
+                return {
+                    code: response.data[0].iataCode,
+                    name: response.data[0].name
                 };
             }
-            
             return null;
         } catch (error) {
-            console.error('Błąd podczas konwersji nazwy miasta na kod:', error);
-            return null;
+            console.error('Błąd podczas pobierania kodu miasta:', error);
+            throw error;
         }
     }
     
@@ -264,34 +297,20 @@ class AmadeusService {
      * @returns {string|null} - Nazwa miasta lub null
      */
     getCityNameFromCode(cityCode) {
-        if (!cityCode) return null;
-        
-        const codeMapping = {
+        // Prosta mapa kodów IATA do nazw miast
+        const cityMap = {
             'WAW': 'Warszawa',
             'KRK': 'Kraków',
             'GDN': 'Gdańsk',
             'WRO': 'Wrocław',
             'POZ': 'Poznań',
-            'SZZ': 'Szczecin',
-            'LCJ': 'Łódź',
-            'LUZ': 'Lublin',
-            'KTW': 'Katowice',
-            'RZE': 'Rzeszów',
-            'BZG': 'Bydgoszcz',
-            'ZAK': 'Zakopane',
-            // Popularne miasta zagraniczne
             'PAR': 'Paryż',
             'LON': 'Londyn',
-            'BER': 'Berlin',
-            'ROM': 'Rzym',
-            'MAD': 'Madryt',
-            'BCN': 'Barcelona',
             'NYC': 'Nowy Jork',
-            'TYO': 'Tokio',
-            'DXB': 'Dubaj'
+            'ROM': 'Rzym',
+            'BER': 'Berlin'
         };
-        
-        return codeMapping[cityCode.toUpperCase()] || cityCode;
+        return cityMap[cityCode] || cityCode;
     }
 
     /**
@@ -329,10 +348,10 @@ class AmadeusService {
             
             // Generuj losową cenę w zależności od miasta
             let basePrice;
-            if (['PAR', 'LON', 'NYC', 'TYO', 'DXB'].includes(cityCode)) {
+            if (['PAR', 'LON', 'NYC', 'ROM', 'BER'].includes(cityCode)) {
                 // Droższe miasta
                 basePrice = Math.floor(Math.random() * 300) + 200;
-            } else if (['WAW', 'KRK', 'BER', 'ROM', 'MAD', 'BCN'].includes(cityCode)) {
+            } else if (['WAW', 'KRK', 'POZ'].includes(cityCode)) {
                 // Średnio drogie miasta
                 basePrice = Math.floor(Math.random() * 200) + 150;
             } else {
@@ -432,4 +451,5 @@ class AmadeusService {
     }
 }
 
-module.exports = new AmadeusService();
+// Eksportujemy klasę zamiast instancji
+module.exports = AmadeusService;
